@@ -857,34 +857,13 @@
                 }, {
                     merge: true
                 }) // Merge to avoid overwriting if it exists
-                .then(() => {
-                    // Initialize subcollections under the user's document
-                    return Promise.all([
-                        userDocRef.collection('notes').doc('items').set({
-                            initialized: true
-                        }),
-                        userDocRef.collection('todos').doc('items').set({
-                            initialized: true
-                        }),
-                        userDocRef.collection('archived').doc('items').set({
-                            initialized: true
-                        }),
-                        userDocRef.collection('trashed').doc('items').set({
-                            initialized: true
-                        }),
-                        userDocRef.collection('settings').doc('preferences').set({
-                            initialized: true
-                        })
-                    ]);
-                })
                 .catch(error => console.error('Error initializing user collection:', error));
         }
 
-        // Load user data from the correct path
         function loadUserData() {
             const userDocRef = db.collection('users').doc(currentUser.uid);
 
-            userDocRef.collection('notes').doc('items').collection('data')
+            userDocRef.collection('notes')
                 .onSnapshot(snapshot => {
                     notes = snapshot.docs.map(doc => ({
                         id: doc.id,
@@ -897,7 +876,7 @@
                     if (currentNoteIndex >= 0 && currentNoteIndex < notes.length) showNoteDetail(notes[currentNoteIndex].id);
                 }, error => console.error('Error loading notes:', error));
 
-            userDocRef.collection('todos').doc('items').collection('data')
+            userDocRef.collection('todos')
                 .onSnapshot(snapshot => {
                     todos = snapshot.docs.map(doc => ({
                         id: doc.id,
@@ -908,7 +887,7 @@
                     if (currentDay) showDayDetail(currentDay);
                 }, error => console.error('Error loading todos:', error));
 
-            userDocRef.collection('archived').doc('items').collection('data')
+            userDocRef.collection('archived')
                 .onSnapshot(snapshot => {
                     archived = snapshot.docs.map(doc => ({
                         id: doc.id,
@@ -917,7 +896,7 @@
                     renderArchive();
                 }, error => console.error('Error loading archived:', error));
 
-            userDocRef.collection('trashed').doc('items').collection('data')
+            userDocRef.collection('trashed')
                 .onSnapshot(snapshot => {
                     trashed = snapshot.docs.map(doc => ({
                         id: doc.id,
@@ -984,7 +963,6 @@
             document.getElementById('createNoteModal').style.display = 'flex';
         }
 
-        // Update addNote to use the correct path
         function addNote() {
             const title = document.getElementById('newNoteTitle').value.trim();
             let content = document.getElementById('newNoteContent').value.trim();
@@ -1016,7 +994,7 @@
                 }
             }
 
-            db.collection('users').doc(currentUser.uid).collection('notes').doc('items').collection('data').add({
+            db.collection('users').doc(currentUser.uid).collection('notes').add({
                 title,
                 content,
                 category,
