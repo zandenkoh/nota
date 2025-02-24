@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota - Ultimate Productivity Suite</title>
+    <style>
+        :root {
+            --primary: #0066ff;
+            --secondary: #f7f9fb;
+            --text: #1a202c;
+            --muted: #718096;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.05);
+            --hover: #edf2f7;
+            --dark-bg: #1a202c;
+            --dark-card: #2d3748;
+            --dark-text: #e2e8f0;
+            --accent: #ff4444;
+            --success: #38a169;
+            --warning: #ffbb33;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: var(--secondary);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 14px;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #ffffff;
+            padding: 20px;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 64px;
+            padding: 10px;
+        }
+
+        .sidebar.collapsed .sidebar-item span {
+            display: none;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin: 6px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .sidebar-item:hover {
+            background: var(--hover);
+        }
+
+        .sidebar-item svg {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            min-height: 24px;
+            margin-right: 12px;
+            color: var(--muted);
+            transition: color 0.2s ease;
+        }
+
+        .sidebar-item.active {
+            background: rgba(0, 102, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .sidebar-item.active svg {
+            color: var(--primary);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            background: var(--secondary);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px var(--shadow);
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .task-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            min-height: 120px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .task-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .input-group {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 4px var(--shadow);
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: var(--hover);
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            transition: background 0.2s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            background: #e2e8f0;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        button:hover {
+            background: #0052cc;
+        }
+
+        button.secondary {
+            background: var(--hover);
+            color: var(--text);
+        }
+
+        button.secondary:hover {
+            background: #e2e8f0;
+        }
+
+        button.small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .calendar-view {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .calendar-day {
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-height: 140px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .calendar-day:hover {
+            background: var(--hover);
+        }
+
+        .calendar-day.today {
+            border-color: var(--primary);
+            background: rgba(0, 102, 255, 0.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            padding: 32px;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .modal-nav {
+            position: absolute;
+            top: 32px;
+            left: 32px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .priority-high {
+            border-left: 6px solid #ff4444;
+        }
+
+        .priority-medium {
+            border-left: 6px solid #ffbb33;
+        }
+
+        .priority-low {
+            border-left: 6px solid #38a169;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            background: var(--hover);
+            border-radius: 16px;
+            margin: 4px 6px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .context-menu {
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 8px var(--shadow);
+            z-index: 1000;
+            min-width: 180px;
+        }
+
+        .context-menu div {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .context-menu div:hover {
+            background: var(--hover);
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+            background: var(--hover);
+            color: var(--muted);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .dark-theme {
+            --secondary: var(--dark-bg);
+            --text: var(--dark-text);
+            --hover: #4a5568;
+            --border: #4a5568;
+        }
+
+        .dark-theme .sidebar,
+        .dark-theme .card,
+        .dark-theme .task-card,
+        .dark-theme .header,
+        .dark-theme .modal-content,
+        .dark-theme .input-group {
+            background: var(--dark-card);
+            color: var(--dark-text);
+        }
+
+        .dark-theme input,
+        .dark-theme textarea,
+        .dark-theme select {
+            background: #4a5568;
+            color: var(--dark-text);
+        }
+
+        .dark-theme input:focus,
+        .dark-theme textarea:focus,
+        .dark-theme select:focus {
+            background: #718096;
+        }
+
+        .dark-theme .sidebar-item svg {
+            color: #a0aec0;
+        }
+
+        .dark-theme .sidebar-item.active {
+            background: rgba(0, 102, 255, 0.2);
+        }
+
+        .more-options {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            cursor: pointer;
+        }
+
+        .more-options svg {
+            width: 24px;
+            height: 24px;
+            color: var(--muted);
+        }
+
+        .note-preview {
+            max-height: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #2d3748;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-item" onclick="toggleSidebar()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                </svg>
+                <span>Menu</span>
+            </div>
+            <div class="sidebar-item" onclick="showPage('notes')" id="notesNav">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 2h10v7h-5l-1 1H7l-1-1H5V5z" />
+                </svg>
+                <span>Notes</span>
+            </div>
+            <div class="sidebar-item" onclick="showPage('todos')" id="todosNav">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span>Tasks</span>
+            </div>
+            <div class="sidebar-item" onclick="showPage('calendar')" id="calendarNav">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5h8a1 1 0 010 2H6a1 1 0 010-2z" clip-rule="evenodd" />
+                </svg>
+                <span>Calendar</span>
+            </div>
+            <div class="sidebar-item" onclick="showPage('favorites')" id="favoritesNav">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span>Favorites</span>
+            </div>
+            <div class="sidebar-item" onclick="showPage('archive')" id="archiveNav">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
+                    <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd" />
+                </svg>
+                <span>Archive</span>
+            </div>
+            <div class="sidebar-item" onclick="showPage('trash')" id="trashNav">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                <span>Trash</span>
+            </div>
+            <div class="sidebar-item" onclick="showStats()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span>Insights</span>
+            </div>
+            <div class="sidebar-item" onclick="showSettings()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                </svg>
+                <span>Settings</span>
+            </div>
+            <div class="sidebar-item" onclick="logout()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+                </svg>
+                <span>Logout</span>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="header">
+                <h1 id="pageTitle">Notes</h1>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <input type="text" id="searchInput" placeholder="Search across all...">
+                    <button class="secondary" onclick="toggleFilterPanel()">Filters</button>
+                    <button onclick="exportData()">Export</button>
+                </div>
+            </div>
+
+            <div id="notesPage" class="page">
+                <div class="input-group">
+                    <button class="small" onclick="showCreateNoteModal()">+ New Note</button>
+                    <button class="small secondary" onclick="showBulkActions('notes')">Bulk Actions</button>
+                </div>
+                <div id="notesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;"></div>
+            </div>
+
+            <div id="todosPage" class="page" style="display: none;">
+                <div class="input-group">
+                    <button class="small" onclick="showCreateTodoModal()">+ New Task</button>
+                    <button class="small secondary" onclick="showBulkActions('todos')">Bulk Actions</button>
+                </div>
+                <div id="todosList" style="display: flex; flex-direction: column; gap: 20px;"></div>
+            </div>
+
+            <div id="calendarPage" class="page" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <button class="small secondary" onclick="previousMonth()">Previous</button>
+                    <h2 id="calendarMonth">February 2025</h2>
+                    <button class="small secondary" onclick="nextMonth()">Next</button>
+                </div>
+                <div class="calendar-view" id="calendarView"></div>
+            </div>
+
+            <div id="favoritesPage" class="page" style="display: none;">
+                <div id="favoritesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;"></div>
+            </div>
+
+            <div id="archivePage" class="page" style="display: none;">
+                <div id="archiveList" style="display: flex; flex-direction: column; gap: 20px;"></div>
+            </div>
+
+            <div id="trashPage" class="page" style="display: none;">
+                <div id="trashList" style="display: flex; flex-direction: column; gap: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <h2>Welcome to Nota</h2>
+            <input type="email" id="emailInput" placeholder="Email">
+            <input type="password" id="passwordInput" placeholder="Password (min 6 characters)">
+            <div style="display: flex; gap: 16px; margin-top: 20px;">
+                <button onclick="login()">Login</button>
+                <button class="secondary" onclick="register()">Register</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="createNoteModal" class="modal">
+        <div class="modal-content">
+            <h2>Create New Note</h2>
+            <input type="text" id="newNoteTitle" placeholder="Title">
+            <textarea id="newNoteContent" placeholder="Start typing... (supports #tags, @mentions, /commands)"></textarea>
+            <div style="display: flex; gap: 16px;">
+                <select id="newNoteCategory">
+                    <option value="personal">Personal</option>
+                    <option value="work">Work</option>
+                    <option value="ideas">Ideas</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <input type="text" id="newNoteTags" placeholder="Tags (e.g., #urgent, #project)">
+                <input type="color" id="newNoteColor" value="#ffffff" title="Background Color">
+            </div>
+            <select id="noteTemplate">
+                <option value="">No Template</option>
+                <option value="meeting">Meeting Notes</option>
+                <option value="journal">Daily Journal</option>
+                <option value="brainstorm">Brainstorm Session</option>
+                <option value="research">Research Log</option>
+            </select>
+            <input type="text" id="newNoteLinks" placeholder="Links (comma-separated)">
+            <div style="display: flex; gap: 16px; margin-top: 20px;">
+                <button onclick="addNote()">Create</button>
+                <button class="secondary" onclick="closeModal('createNoteModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="createTodoModal" class="modal">
+        <div class="modal-content">
+            <h2>Create New Task</h2>
+            <input type="text" id="newTodoTitle" placeholder="Task Title">
+            <div style="display: flex; gap: 16px;">
+                <select id="newTodoPriority">
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <input type="datetime-local" id="newTodoDueDate">
+                <input type="text" id="newTodoTags" placeholder="Tags (e.g., #urgent)">
+            </div>
+            <input type="number" id="newTodoEffort" min="1" max="10" placeholder="Effort (1-10)">
+            <select id="todoRecurrence">
+                <option value="">One-time</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="custom">Custom</option>
+            </select>
+            <input type="text" id="newTodoAssignees" placeholder="Assignees (emails, comma-separated)">
+            <input type="text" id="newTodoDependencies" placeholder="Dependencies (task IDs, comma-separated)">
+            <div style="display: flex; gap: 16px; margin-top: 20px;">
+                <button onclick="addTodo()">Create</button>
+                <button class="secondary" onclick="closeModal('createTodoModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="noteDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-nav">
+                <button class="small secondary" onclick="navigateNote('prev')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <button class="small secondary" onclick="navigateNote('next')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            <div id="noteDetailContent"></div>
+            <button onclick="closeModal('noteDetailModal')" style="margin-top: 20px;">Close</button>
+        </div>
+    </div>
+
+    <div id="dayDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-nav">
+                <button class="small secondary" onclick="navigateDay('prev')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <button class="small secondary" onclick="navigateDay('next')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            <div id="dayDetailContent"></div>
+            <button onclick="closeModal('dayDetailModal')" style="margin-top: 20px;">Close</button>
+        </div>
+    </div>
+
+    <div id="statsModal" class="modal">
+        <div class="modal-content">
+            <h2>Productivity Insights</h2>
+            <div id="statsContent"></div>
+            <button onclick="closeModal('statsModal')">Close</button>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h2>Settings</h2>
+            <div id="settingsContent">
+                <label>Theme:</label>
+                <select id="themeSelect" onchange="changeTheme()">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+                <label>Default View:</label>
+                <select id="defaultView">
+                    <option value="notes">Notes</option>
+                    <option value="todos">Tasks</option>
+                    <option value="calendar">Calendar</option>
+                </select>
+                <label>Time Format:</label>
+                <select id="timeFormat">
+                    <option value="12">12-hour</option>
+                    <option value="24">24-hour</option>
+                </select>
+                <label>Notifications:</label>
+                <input type="checkbox" id="notificationsToggle">
+                <label>Auto-Save Interval (seconds):</label>
+                <input type="number" id="autoSaveInterval" min="5" value="30">
+                <label>Max Preview Characters:</label>
+                <input type="number" id="maxPreviewChars" min="100" value="200">
+                <label>Default Task Sort:</label>
+                <select id="taskSort">
+                    <option value="priority">Priority</option>
+                    <option value="dueDate">Due Date</option>
+                    <option value="created">Created</option>
+                </select>
+                <label>Default Note Sort:</label>
+                <select id="noteSort">
+                    <option value="updated">Last Updated</option>
+                    <option value="created">Created</option>
+                    <option value="title">Title</option>
+                </select>
+            </div>
+            <button onclick="saveSettings(); closeModal('settingsModal')">Save & Close</button>
+        </div>
+    </div>
+
+    <div id="filterModal" class="modal">
+        <div class="modal-content">
+            <h2>Filters</h2>
+            <select id="filterCategory">
+                <option value="">All Categories</option>
+                <option value="personal">Personal</option>
+                <option value="work">Work</option>
+                <option value="ideas">Ideas</option>
+            </select>
+            <input type="text" id="filterTags" placeholder="Filter by tags">
+            <select id="filterPriority">
+                <option value="">All Priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <select id="filterStatus">
+                <option value="">All Statuses</option>
+                <option value="completed">Completed</option>
+                <option value="incomplete">Incomplete</option>
+            </select>
+            <button onclick="applyFilters()">Apply</button>
+            <button class="secondary" onclick="closeModal('filterModal')">Cancel</button>
+        </div>
+    </div>
+
+    <div id="bulkActionsModal" class="modal">
+        <div class="modal-content">
+            <h2>Bulk Actions</h2>
+            <select id="bulkActionType">
+                <option value="archive">Archive Selected</option>
+                <option value="trash">Trash Selected</option>
+                <option value="favorite">Favorite Selected</option>
+                <option value="pin">Pin Selected</option>
+            </select>
+            <div id="bulkItemsList" style="max-height: 200px; overflow-y: auto; margin-top: 16px;"></div>
+            <button onclick="executeBulkAction()">Execute</button>
+            <button class="secondary" onclick="closeModal('bulkActionsModal')">Cancel</button>
+        </div>
+    </div>
+
+    <div id="contextMenu" class="context-menu" style="display: none;"></div>
+    <div id="tooltip" class="tooltip"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDigoOu697kT9ZknbEr0o8ITJrDsxuPp_g",
+            authDomain: "votecanvass.firebaseapp.com",
+            projectId: "votecanvass",
+            storageBucket: "votecanvass.firebasestorage.app",
+            messagingSenderId: "697871634440",
+            appId: "1:697871634440:web:fb70ce4cec51d5568641bd"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentUser = null;
+        let notes = [],
+            todos = [],
+            archived = [],
+            trashed = [];
+        let settings = {
+            theme: 'light',
+            defaultView: 'notes',
+            timeFormat: '12',
+            notifications: false,
+            autoSaveInterval: 30,
+            maxPreviewChars: 200,
+            taskSort: 'priority',
+            noteSort: 'updated'
+        };
+        let currentMonth = 1; // February 2025 (0-based)
+        let currentNoteIndex = -1;
+        let currentDay = null;
+        let selectedItems = new Set();
+
+        // Authentication
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authModal').style.display = 'none';
+                initializeUserCollection();
+                loadUserData();
+                loadSettings();
+                showPage(settings.defaultView);
+            } else {
+                currentUser = null;
+                document.getElementById('authModal').style.display = 'flex';
+            }
+        });
+
+        function login() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            if (!email || !password) {
+                alert('Please enter both email and password.');
+                return;
+            }
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => alert(`Login failed: ${error.message}`));
+        }
+
+        function register() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            if (!email || password.length < 6) {
+                alert('Please enter a valid email and password (min 6 characters).');
+                return;
+            }
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Successfully created user, now initialize the collection
+                    currentUser = userCredential.user; // Set currentUser immediately
+                    initializeUserCollection();
+                })
+                .catch(error => alert(`Registration failed: ${error.message}`));
+        }
+
+        // Ensure auth.onAuthStateChanged still works as expected
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authModal').style.display = 'none';
+                loadUserData();
+                loadSettings();
+                showPage(settings.defaultView);
+            } else {
+                currentUser = null;
+                document.getElementById('authModal').style.display = 'flex';
+            }
+        });
+
+        function logout() {
+            auth.signOut();
+            selectedItems.clear();
+        }
+
+        function initializeUserCollection() {
+            // Use the 'users' collection and create a document with the user's UID
+            const userDocRef = db.collection('users').doc(currentUser.uid);
+            userDocRef.set({
+                    created: firebase.firestore.FieldValue.serverTimestamp(),
+                    userEmail: currentUser.email
+                }, {
+                    merge: true
+                }) // Merge to avoid overwriting if it exists
+                .then(() => {
+                    // Initialize subcollections under the user's document
+                    return Promise.all([
+                        userDocRef.collection('notes').doc('items').set({
+                            initialized: true
+                        }),
+                        userDocRef.collection('todos').doc('items').set({
+                            initialized: true
+                        }),
+                        userDocRef.collection('archived').doc('items').set({
+                            initialized: true
+                        }),
+                        userDocRef.collection('trashed').doc('items').set({
+                            initialized: true
+                        }),
+                        userDocRef.collection('settings').doc('preferences').set({
+                            initialized: true
+                        })
+                    ]);
+                })
+                .catch(error => console.error('Error initializing user collection:', error));
+        }
+
+        // Load user data from the correct path
+        function loadUserData() {
+            const userDocRef = db.collection('users').doc(currentUser.uid);
+
+            userDocRef.collection('notes').doc('items').collection('data')
+                .onSnapshot(snapshot => {
+                    notes = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    renderNotes();
+                    renderFavorites();
+                    renderArchive();
+                    renderTrash();
+                    if (currentNoteIndex >= 0 && currentNoteIndex < notes.length) showNoteDetail(notes[currentNoteIndex].id);
+                }, error => console.error('Error loading notes:', error));
+
+            userDocRef.collection('todos').doc('items').collection('data')
+                .onSnapshot(snapshot => {
+                    todos = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    renderTodos();
+                    renderCalendar();
+                    if (currentDay) showDayDetail(currentDay);
+                }, error => console.error('Error loading todos:', error));
+
+            userDocRef.collection('archived').doc('items').collection('data')
+                .onSnapshot(snapshot => {
+                    archived = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    renderArchive();
+                }, error => console.error('Error loading archived:', error));
+
+            userDocRef.collection('trashed').doc('items').collection('data')
+                .onSnapshot(snapshot => {
+                    trashed = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    renderTrash();
+                }, error => console.error('Error loading trashed:', error));
+        }
+
+        function loadSettings() {
+            db.collection(currentUser.uid).doc('settings').collection('preferences').doc('user')
+                .get().then(doc => {
+                    if (doc.exists) {
+                        settings = {
+                            ...settings,
+                            ...doc.data()
+                        };
+                        applySettings();
+                    }
+                }).catch(error => console.error('Error loading settings:', error));
+        }
+
+        function saveSettings() {
+            settings.theme = document.getElementById('themeSelect').value;
+            settings.defaultView = document.getElementById('defaultView').value;
+            settings.timeFormat = document.getElementById('timeFormat').value;
+            settings.notifications = document.getElementById('notificationsToggle').checked;
+            settings.autoSaveInterval = parseInt(document.getElementById('autoSaveInterval').value) || 30;
+            settings.maxPreviewChars = parseInt(document.getElementById('maxPreviewChars').value) || 200;
+            settings.taskSort = document.getElementById('taskSort').value;
+            settings.noteSort = document.getElementById('noteSort').value;
+            db.collection(currentUser.uid).doc('settings').collection('preferences').doc('user')
+                .set(settings)
+                .then(() => {
+                    applySettings();
+                    renderNotes();
+                    renderTodos();
+                    closeModal('settingsModal');
+                })
+                .catch(error => console.error('Error saving settings:', error));
+        }
+
+        function applySettings() {
+            document.body.classList.toggle('dark-theme', settings.theme === 'dark');
+            document.getElementById('themeSelect').value = settings.theme;
+            document.getElementById('defaultView').value = settings.defaultView;
+            document.getElementById('timeFormat').value = settings.timeFormat;
+            document.getElementById('notificationsToggle').checked = settings.notifications;
+            document.getElementById('autoSaveInterval').value = settings.autoSaveInterval;
+            document.getElementById('maxPreviewChars').value = settings.maxPreviewChars;
+            document.getElementById('taskSort').value = settings.taskSort;
+            document.getElementById('noteSort').value = settings.noteSort;
+        }
+
+        // Note functions
+        function showCreateNoteModal() {
+            document.getElementById('newNoteTitle').value = '';
+            document.getElementById('newNoteContent').value = '';
+            document.getElementById('newNoteTags').value = '';
+            document.getElementById('newNoteColor').value = '#ffffff';
+            document.getElementById('newNoteCategory').value = 'personal';
+            document.getElementById('noteTemplate').value = '';
+            document.getElementById('newNoteLinks').value = '';
+            document.getElementById('createNoteModal').style.display = 'flex';
+        }
+
+        // Update addNote to use the correct path
+        function addNote() {
+            const title = document.getElementById('newNoteTitle').value.trim();
+            let content = document.getElementById('newNoteContent').value.trim();
+            const category = document.getElementById('newNoteCategory').value;
+            const tags = document.getElementById('newNoteTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const color = document.getElementById('newNoteColor').value;
+            const template = document.getElementById('noteTemplate').value;
+            const links = document.getElementById('newNoteLinks').value.split(',').map(l => l.trim()).filter(l => l);
+
+            if (!title) {
+                alert('Title is required.');
+                return;
+            }
+
+            if (template) {
+                switch (template) {
+                    case 'meeting':
+                        content = `Meeting Notes\n- Date: ${new Date().toLocaleDateString()}\n- Attendees:\n- Agenda:\n- Action Items:` + (content ? `\n${content}` : '');
+                        break;
+                    case 'journal':
+                        content = `Journal Entry - ${new Date().toLocaleDateString()}\n- Mood:\n- Highlights:\n- Reflections:` + (content ? `\n${content}` : '');
+                        break;
+                    case 'brainstorm':
+                        content = `Brainstorm Session\n- Topic:\n- Ideas:\n  - \n- Next Steps:` + (content ? `\n${content}` : '');
+                        break;
+                    case 'research':
+                        content = `Research Log\n- Topic:\n- Sources:\n- Findings:\n- Notes:` + (content ? `\n${content}` : '');
+                        break;
+                }
+            }
+
+            db.collection('users').doc(currentUser.uid).collection('notes').doc('items').collection('data').add({
+                title,
+                content,
+                category,
+                tags,
+                color,
+                links,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                updated: firebase.firestore.FieldValue.serverTimestamp(),
+                pinned: false,
+                favorited: false,
+                archived: false,
+                trashed: false,
+                wordCount: content.split(/\s+/).length,
+                mentions: extractMentions(content),
+                comments: [],
+                attachments: [],
+                versionHistory: [{
+                    content,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }],
+                locked: false,
+                priority: 0,
+                reminders: [],
+                collaborators: []
+            }).then(() => {
+                closeModal('createNoteModal');
+                if (settings.notifications) notify('Note created successfully!');
+            }).catch(error => console.error('Error adding note:', error));
+        }
+
+        function editNote(id, newContent) {
+            const note = notes.find(n => n.id === id);
+            if (newContent !== null && newContent !== note.content) {
+                const updatedHistory = [...(note.versionHistory || []), {
+                    content: note.content,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }];
+                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                    content: newContent,
+                    updated: firebase.firestore.FieldValue.serverTimestamp(),
+                    wordCount: newContent.split(/\s+/).length,
+                    mentions: extractMentions(newContent),
+                    versionHistory: updatedHistory
+                }).catch(error => console.error('Error editing note:', error));
+            }
+        }
+
+        // Update other CRUD functions similarly (example for deleteNote)
+        function deleteNote(id) {
+            db.collection('users').doc(currentUser.uid).collection('notes').doc('items').collection('data').doc(id).update({
+                trashed: true,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error deleting note:', error));
+        }
+
+        function togglePinNote(id) {
+            const note = notes.find(n => n.id === id);
+            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                pinned: !note.pinned,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error pinning note:', error));
+        }
+
+        function toggleFavoriteNote(id) {
+            const note = notes.find(n => n.id === id);
+            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                favorited: !note.favorited,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error favoriting note:', error));
+        }
+
+        function archiveNote(id) {
+            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                archived: true,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error archiving note:', error));
+        }
+
+        function shareNote(id) {
+            const note = notes.find(n => n.id === id);
+            const url = `${window.location.origin}/share?note=${id}&user=${currentUser.uid}`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Share link copied to clipboard!');
+                if (settings.notifications) notify('Note shared!');
+            }).catch(error => console.error('Error sharing note:', error));
+        }
+
+        function addComment(id) {
+            const comment = prompt('Add a comment:');
+            if (comment) {
+                const note = notes.find(n => n.id === id);
+                const comments = [...(note.comments || []), {
+                    text: comment,
+                    user: currentUser.email,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }];
+                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                    comments,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error adding comment:', error));
+            }
+        }
+
+        function lockNote(id) {
+            const note = notes.find(n => n.id === id);
+            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                locked: !note.locked,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error locking note:', error));
+        }
+
+        function setNotePriority(id) {
+            const priority = parseInt(prompt('Set priority (0-5):', '0')) || 0;
+            if (priority >= 0 && priority <= 5) {
+                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                    priority,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error setting priority:', error));
+            }
+        }
+
+        function addReminderToNote(id) {
+            const date = prompt('Enter reminder date (YYYY-MM-DD HH:MM):');
+            if (date) {
+                const reminderDate = new Date(date);
+                if (isNaN(reminderDate.getTime())) {
+                    alert('Invalid date format.');
+                    return;
+                }
+                const note = notes.find(n => n.id === id);
+                const reminders = [...(note.reminders || []), reminderDate.toISOString()];
+                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                    reminders,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error adding reminder:', error));
+            }
+        }
+
+        // Todo functions
+        function showCreateTodoModal() {
+            document.getElementById('newTodoTitle').value = '';
+            document.getElementById('newTodoDueDate').value = '';
+            document.getElementById('newTodoTags').value = '';
+            document.getElementById('newTodoEffort').value = '';
+            document.getElementById('newTodoPriority').value = 'medium';
+            document.getElementById('todoRecurrence').value = '';
+            document.getElementById('newTodoAssignees').value = '';
+            document.getElementById('newTodoDependencies').value = '';
+            document.getElementById('createTodoModal').style.display = 'flex';
+        }
+
+        // Update addTodo to use the correct path
+        function addTodo() {
+            const title = document.getElementById('newTodoTitle').value.trim();
+            const priority = document.getElementById('newTodoPriority').value;
+            const dueDate = document.getElementById('newTodoDueDate').value;
+            const tags = document.getElementById('newTodoTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const effort = parseInt(document.getElementById('newTodoEffort').value) || 1;
+            const recurrence = document.getElementById('todoRecurrence').value;
+            const assignees = document.getElementById('newTodoAssignees').value.split(',').map(a => a.trim()).filter(a => a);
+            const dependencies = document.getElementById('newTodoDependencies').value.split(',').map(d => d.trim()).filter(d => d);
+
+            if (!title) {
+                alert('Title is required.');
+                return;
+            }
+
+            const todoData = {
+                title,
+                priority,
+                dueDate: dueDate || null,
+                tags,
+                effort,
+                completed: false,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                updated: firebase.firestore.FieldValue.serverTimestamp(),
+                archived: false,
+                trashed: false,
+                subtasks: [],
+                dependencies,
+                recurrence,
+                progress: 0,
+                assignees,
+                reminders: [],
+                timeEstimate: 0,
+                actualTime: 0,
+                status: 'pending'
+            };
+            db.collection('users').doc(currentUser.uid).collection('todos').doc('items').collection('data').add(todoData)
+                .then(() => {
+                    closeModal('createTodoModal');
+                    if (settings.notifications) notify('Task created successfully!');
+                })
+                .catch(error => console.error('Error adding todo:', error));
+        }
+
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                completed: !todo.completed,
+                updated: firebase.firestore.FieldValue.serverTimestamp(),
+                progress: !todo.completed ? 100 : 0,
+                status: !todo.completed ? 'completed' : 'pending'
+            }).catch(error => console.error('Error toggling todo:', error));
+        }
+
+        function deleteTodo(id) {
+            db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                trashed: true,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error deleting todo:', error));
+        }
+
+        function archiveTodo(id) {
+            db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                archived: true,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error archiving todo:', error));
+        }
+
+        function addSubtask(id) {
+            const subtaskTitle = prompt('Enter subtask:');
+            if (subtaskTitle) {
+                const todo = todos.find(t => t.id === id);
+                const subtasks = [...(todo.subtasks || []), {
+                    title: subtaskTitle,
+                    completed: false,
+                    created: new Date().toISOString()
+                }];
+                const progress = subtasks.length ? (subtasks.filter(s => s.completed).length / subtasks.length) * 100 : 0;
+                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                    subtasks,
+                    progress,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error adding subtask:', error));
+            }
+        }
+
+        function toggleSubtask(todoId, subtaskIndex) {
+            const todo = todos.find(t => t.id === todoId);
+            const subtasks = [...todo.subtasks];
+            subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
+            const progress = subtasks.length ? (subtasks.filter(s => s.completed).length / subtasks.length) * 100 : 0;
+            db.collection(currentUser.uid).doc('todos').collection('items').doc(todoId).update({
+                subtasks,
+                progress,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error toggling subtask:', error));
+        }
+
+        function assignTask(id) {
+            const email = prompt('Assign to email:');
+            if (email && validateEmail(email)) {
+                const todo = todos.find(t => t.id === id);
+                const assignees = [...(todo.assignees || []), email];
+                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                    assignees,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error assigning task:', error));
+            } else {
+                alert('Invalid email address.');
+            }
+        }
+
+        function setTimeEstimate(id) {
+            const time = parseInt(prompt('Set time estimate (minutes):', '0')) || 0;
+            if (time >= 0) {
+                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                    timeEstimate: time,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error setting time estimate:', error));
+            }
+        }
+
+        function logTime(id) {
+            const time = parseInt(prompt('Log actual time spent (minutes):', '0')) || 0;
+            if (time >= 0) {
+                const todo = todos.find(t => t.id === id);
+                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                    actualTime: (todo.actualTime || 0) + time,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error logging time:', error));
+            }
+        }
+
+        function addReminderToTodo(id) {
+            const date = prompt('Enter reminder date (YYYY-MM-DD HH:MM):');
+            if (date) {
+                const reminderDate = new Date(date);
+                if (isNaN(reminderDate.getTime())) {
+                    alert('Invalid date format.');
+                    return;
+                }
+                const todo = todos.find(t => t.id === id);
+                const reminders = [...(todo.reminders || []), reminderDate.toISOString()];
+                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                    reminders,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error adding reminder:', error));
+            }
+        }
+
+        // Rendering functions
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            const options = settings.timeFormat === '12' ? {
+                hour12: true,
+                hour: 'numeric',
+                minute: '2-digit',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            } : {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            };
+            return date.toLocaleString('en-US', options);
+        }
+
+        function renderNotes(filter = '') {
+            const notesList = document.getElementById('notesList');
+            let filteredNotes = notes.filter(n => !n.archived && !n.trashed &&
+                (n.title.toLowerCase().includes(filter) || n.content.toLowerCase().includes(filter) || n.tags.some(t => t.toLowerCase().includes(filter))));
+
+            switch (settings.noteSort) {
+                case 'created':
+                    filteredNotes.sort((a, b) => b.created?.toDate() - a.created?.toDate());
+                    break;
+                case 'title':
+                    filteredNotes.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                default: // updated
+                    filteredNotes.sort((a, b) => (b.pinned - a.pinned) || (b.updated?.toDate() - a.updated?.toDate()));
+            }
+
+            notesList.innerHTML = filteredNotes.map(note => {
+                const preview = note.content.length > settings.maxPreviewChars ?
+                    note.content.substring(0, settings.maxPreviewChars) + '...' : note.content;
+                return `
+                    <div class="card" style="background: ${note.color};" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
+                        <h3 style="font-size: 18px; font-weight: 600;">${note.title}</h3>
+                        <p class="note-preview">${highlightTagsAndMentions(preview)}</p>
+                        <div>${note.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 12px;">
+                            <span>${note.category}</span> • <span>${formatDate(note.updated)}</span>
+                            ${note.locked ? '<span class="badge">Locked</span>' : ''}
+                            ${note.priority > 0 ? `<span class="badge" style="background: ${priorityColor(note.priority)};">P${note.priority}</span>` : ''}
+                        </div>
+                        <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderTodos() {
+            const todosList = document.getElementById('todosList');
+            let filteredTodos = todos.filter(t => !t.archived && !t.trashed);
+
+            switch (settings.taskSort) {
+                case 'dueDate':
+                    filteredTodos.sort((a, b) => (a.dueDate || 'Z') > (b.dueDate || 'Z') ? 1 : -1);
+                    break;
+                case 'created':
+                    filteredTodos.sort((a, b) => b.created?.toDate() - a.created?.toDate());
+                    break;
+                default: // priority
+                    filteredTodos.sort((a, b) => a.completed - b.completed || (priorityValue(a.priority) - priorityValue(b.priority)));
+            }
+
+            todosList.innerHTML = filteredTodos.map(todo => `
+                <div class="task-card priority-${todo.priority}" onclick="toggleSelection(event, 'todo', '${todo.id}')">
+                    <div class="task-header">
+                        <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo('${todo.id}')" onmouseover="showTooltip(event, '${todo.completed ? 'Mark as incomplete' : 'Mark as complete'}')" onmouseout="hideTooltip()">
+                        <div style="flex: 1;">
+                            <span style="font-size: 16px; font-weight: 500; ${todo.completed ? 'text-decoration: line-through; color: var(--muted);' : ''}">${todo.title}</span>
+                            ${todo.dueDate ? `<small style="display: block; margin-top: 4px;">Due: ${formatDate(new Date(todo.dueDate))}</small>` : ''}
+                        </div>
+                    </div>
+                    <div class="task-details">
+                        ${todo.tags.length ? `<span>${todo.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</span>` : ''}
+                        <span>Effort: ${todo.effort}/10</span>
+                        <span>Progress: ${Math.round(todo.progress)}%</span>
+                        ${todo.assignees?.length ? `<span>Assigned: ${todo.assignees.join(', ')}</span>` : ''}
+                        ${todo.timeEstimate ? `<span>Est: ${todo.timeEstimate}m</span>` : ''}
+                        ${todo.actualTime ? `<span>Spent: ${todo.actualTime}m</span>` : ''}
+                    </div>
+                    ${todo.subtasks?.length ? `
+                        <div class="progress-bar"><div class="progress-bar-fill" style="width: ${todo.progress}%"></div></div>
+                        <div style="margin-top: 12px;">
+                            ${todo.subtasks.map((s, i) => `
+                                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                    <input type="checkbox" ${s.completed ? 'checked' : ''} onchange="toggleSubtask('${todo.id}', ${i})">
+                                    <span ${s.completed ? 'style="text-decoration: line-through; color: var(--muted);"' : ''}>${s.title}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCalendar() {
+            const calendarView = document.getElementById('calendarView');
+            const year = 2025;
+            const daysInMonth = new Date(year, currentMonth + 1, 0).getDate();
+            const firstDay = new Date(year, currentMonth, 1).getDay();
+            let html = '';
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="calendar-day" style="background: var(--hover);"></div>';
+            }
+            for (let i = 1; i <= daysInMonth; i++) {
+                const date = new Date(year, currentMonth, i);
+                const isToday = date.toDateString() === new Date().toDateString();
+                const dayTodos = todos.filter(t => t.dueDate && new Date(t.dueDate).toDateString() === date.toDateString());
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}" onclick="showDayDetail(${i})">
+                        <strong style="font-size: 16px; font-weight: 600;">${i}</strong>
+                        ${dayTodos.map(t => `
+                            <div style="font-size: 12px; margin-top: 8px; color: ${t.priority === 'high' ? '#ff4444' : t.priority === 'medium' ? '#ffbb33' : '#38a169'};">
+                                ${t.completed ? '<s>' : ''}${t.title}${t.completed ? '</s>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            calendarView.innerHTML = html;
+            document.getElementById('calendarMonth').textContent = new Date(year, currentMonth).toLocaleString('en-US', {
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+
+        function renderFavorites() {
+            const favoritesList = document.getElementById('favoritesList');
+            favoritesList.innerHTML = notes
+                .filter(n => n.favorited)
+                .map(note => `
+                    <div class="card" style="background: ${note.color};" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
+                        <h3 style="font-size: 18px; font-weight: 600;">${note.title}</h3>
+                        <p class="note-preview">${highlightTagsAndMentions(note.content.substring(0, settings.maxPreviewChars) + (note.content.length > settings.maxPreviewChars ? '...' : ''))}</p>
+                        <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function renderArchive() {
+            const archiveList = document.getElementById('archiveList');
+            archiveList.innerHTML = [...notes.filter(n => n.archived), ...todos.filter(t => t.archived)]
+                .map(item => `
+                    <div class="card" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
+                        <h3 style="font-size: 18px; font-weight: 600;">${item.title}</h3>
+                        ${item.content ? `<p>${highlightTagsAndMentions(item.content.substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : ''))}</p>` : ''}
+                        <div style="display: flex; gap: 12px; margin-top: 16px;">
+                            <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
+                            <button class="small secondary" onclick="deleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function renderTrash() {
+            const trashList = document.getElementById('trashList');
+            trashList.innerHTML = [...notes.filter(n => n.trashed), ...todos.filter(t => t.trashed)]
+                .map(item => `
+                    <div class="card" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
+                        <h3 style="font-size: 18px; font-weight: 600;">${item.title}</h3>
+                        ${item.content ? `<p>${highlightTagsAndMentions(item.content.substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : ''))}</p>` : ''}
+                        <div style="display: flex; gap: 12px; margin-top: 16px;">
+                            <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
+                            <button class="small secondary" onclick="permanentlyDeleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete Forever</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // Detail views
+        function showNoteDetail(id) {
+            const note = notes.find(n => n.id === id);
+            currentNoteIndex = notes.findIndex(n => n.id === id);
+            const detailContent = document.getElementById('noteDetailContent');
+            detailContent.innerHTML = `
+                <h2 style="font-size: 24px; font-weight: 700;">${note.title}</h2>
+                <textarea id="noteDetailEdit" style="min-height: 250px;" ${note.locked ? 'disabled' : ''}>${note.content}</textarea>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 12px;">
+                    <span>Category: ${note.category}</span> • 
+                    <span>Words: ${note.wordCount}</span> • 
+                    <span>Created: ${formatDate(note.created)}</span> • 
+                    <span>Updated: ${formatDate(note.updated)}</span>
+                    ${note.priority > 0 ? `<span class="badge" style="background: ${priorityColor(note.priority)};">P${note.priority}</span>` : ''}
+                </div>
+                <div>${note.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                ${note.links?.length ? `<div style="margin-top: 12px;"><strong>Links:</strong> ${note.links.map(l => `<a href="${l}" target="_blank">${l}</a>`).join(', ')}</div>` : ''}
+                ${note.comments?.length ? `
+                    <h3 style="margin-top: 20px;">Comments</h3>
+                    ${note.comments.map(c => `<p style="font-size: 14px;"><strong>${c.user}</strong> (${formatDate(c.timestamp)}): ${c.text}</p>`).join('')}
+                ` : ''}
+                ${note.versionHistory?.length > 1 ? `
+                    <h3 style="margin-top: 20px;">Version History</h3>
+                    ${note.versionHistory.map((v, i) => `<p style="font-size: 12px;">${formatDate(v.timestamp)}: ${v.content.substring(0, 50)}...</p>`).join('')}
+                ` : ''}
+                ${note.reminders?.length ? `
+                    <h3 style="margin-top: 20px;">Reminders</h3>
+                    ${note.reminders.map(r => `<p style="font-size: 12px;">${formatDate(new Date(r))}</p>`).join('')}
+                ` : ''}
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px;">
+                    <button onclick="editNote('${note.id}', document.getElementById('noteDetailEdit').value)" ${note.locked ? 'disabled' : ''}>Save</button>
+                    <button class="secondary" onclick="addComment('${note.id}')">Comment</button>
+                    <button class="secondary" onclick="togglePinNote('${note.id}')">${note.pinned ? 'Unpin' : 'Pin'}</button>
+                    <button class="secondary" onclick="toggleFavoriteNote('${note.id}')">${note.favorited ? 'Unfavorite' : 'Favorite'}</button>
+                    <button class="secondary" onclick="shareNote('${note.id}')">Share</button>
+                    <button class="secondary" onclick="lockNote('${note.id}')">${note.locked ? 'Unlock' : 'Lock'}</button>
+                    <button class="secondary" onclick="setNotePriority('${note.id}')">Set Priority</button>
+                    <button class="secondary" onclick="addReminderToNote('${note.id}')">Add Reminder</button>
+                    <button class="secondary" onclick="archiveNote('${note.id}')">Archive</button>
+                    <button class="secondary" onclick="deleteNote('${note.id}')">Delete</button>
+                </div>
+            `;
+            document.getElementById('noteDetailModal').style.display = 'flex';
+        }
+
+        function navigateNote(direction) {
+            if (direction === 'prev' && currentNoteIndex > 0) {
+                currentNoteIndex--;
+                showNoteDetail(notes[currentNoteIndex].id);
+            } else if (direction === 'next' && currentNoteIndex < notes.length - 1) {
+                currentNoteIndex++;
+                showNoteDetail(notes[currentNoteIndex].id);
+            }
+        }
+
+        function showDayDetail(day) {
+            currentDay = day;
+            const date = new Date(2025, currentMonth, day);
+            const dayTodos = todos.filter(t => t.dueDate && new Date(t.dueDate).toDateString() === date.toDateString());
+            const detailContent = document.getElementById('dayDetailContent');
+            detailContent.innerHTML = `
+                <h2 style="font-size: 24px; font-weight: 700;">${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</h2>
+                ${dayTodos.length ? dayTodos.map(t => `
+                    <div class="task-card priority-${t.priority}">
+                        <div class="task-header">
+                            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodo('${t.id}')">
+                            <div style="flex: 1;">
+                                <span style="font-size: 16px; font-weight: 500; ${t.completed ? 'text-decoration: line-through; color: var(--muted);' : ''}">${t.title}</span>
+                                <div style="margin-top: 8px;">${t.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                            </div>
+                        </div>
+                        <div class="task-details">
+                            <span>Effort: ${t.effort}/10</span>
+                            <span>Progress: ${Math.round(t.progress)}%</span>
+                            ${t.assignees?.length ? `<span>Assigned: ${t.assignees.join(', ')}</span>` : ''}
+                            ${t.timeEstimate ? `<span>Est: ${t.timeEstimate}m</span>` : ''}
+                            ${t.actualTime ? `<span>Spent: ${t.actualTime}m</span>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 12px; margin-top: 16px;">
+                            <button class="small secondary" onclick="addSubtask('${t.id}')">Subtask</button>
+                            <button class="small secondary" onclick="assignTask('${t.id}')">Assign</button>
+                            <button class="small secondary" onclick="setTimeEstimate('${t.id}')">Estimate</button>
+                            <button class="small secondary" onclick="logTime('${t.id}')">Log Time</button>
+                        </div>
+                    </div>
+                `).join('') : '<p style="font-size: 16px; color: var(--muted);">No tasks scheduled.</p>'}
+                <button class="small" onclick="showCreateTodoModalForDay(${day})">+ Add Task</button>
+            `;
+            document.getElementById('dayDetailModal').style.display = 'flex';
+        }
+
+        function navigateDay(direction) {
+            const daysInMonth = new Date(2025, currentMonth + 1, 0).getDate();
+            if (direction === 'prev' && currentDay > 1) {
+                currentDay--;
+                showDayDetail(currentDay);
+            } else if (direction === 'next' && currentDay < daysInMonth) {
+                currentDay++;
+                showDayDetail(currentDay);
+            }
+        }
+
+        function showCreateTodoModalForDay(day) {
+            showCreateTodoModal();
+            const date = new Date(2025, currentMonth, day);
+            document.getElementById('newTodoDueDate').value = date.toISOString().slice(0, 16);
+        }
+
+        // Utility functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
+            document.getElementById(`${pageId}Page`).style.display = 'block';
+            document.getElementById('pageTitle').textContent = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(`${pageId}Nav`).classList.add('active');
+            selectedItems.clear();
+        }
+
+        function showStats() {
+            const modal = document.getElementById('statsModal');
+            const statsContent = document.getElementById('statsContent');
+            const completedTodos = todos.filter(t => t.completed).length;
+            const totalTodos = todos.length;
+            const averageEffort = todos.length ? (todos.reduce((sum, t) => sum + (t.effort || 1), 0) / todos.length).toFixed(1) : 0;
+            const tagUsage = todos.reduce((acc, t) => {
+                t.tags.forEach(tag => acc[tag] = (acc[tag] || 0) + 1);
+                return acc;
+            }, {});
+            const timeSpent = todos.reduce((sum, t) => sum + (t.actualTime || 0), 0);
+            const overdueTasks = todos.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && !t.completed).length;
+
+            statsContent.innerHTML = `
+                <p><strong>Total Notes:</strong> ${notes.length} <span class="badge">${notes.filter(n => n.pinned).length} Pinned</span> <span class="badge">${notes.filter(n => n.favorited).length} Favorited</span></p>
+                <p><strong>Total Tasks:</strong> ${totalTodos} <span class="badge">${completedTodos} Completed (${totalTodos ? Math.round((completedTodos/totalTodos)*100) : 0}%)</span></p>
+                <p><strong>Overdue Tasks:</strong> ${overdueTasks}</p>
+                <p><strong>Average Task Effort:</strong> ${averageEffort}/10</p>
+                <p><strong>Total Time Spent:</strong> ${timeSpent} minutes</p>
+                <p><strong>Top Tags:</strong> ${Object.entries(tagUsage).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag, count]) => `${tag} (${count})`).join(', ')}</p>
+                <p><strong>Locked Notes:</strong> ${notes.filter(n => n.locked).length}</p>
+                <p><strong>Collaborative Items:</strong> ${notes.filter(n => n.collaborators?.length).length + todos.filter(t => t.assignees?.length).length}</p>
+                <div class="progress-bar" style="margin-top: 16px;"><div class="progress-bar-fill" style="width: ${(completedTodos/totalTodos)*100}%"></div></div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function showSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            selectedItems.clear();
+        }
+
+        function toggleFilterPanel() {
+            document.getElementById('filterModal').style.display = 'flex';
+        }
+
+        function applyFilters() {
+            const category = document.getElementById('filterCategory').value;
+            const tags = document.getElementById('filterTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const priority = document.getElementById('filterPriority').value;
+            const status = document.getElementById('filterStatus').value;
+            const filterQuery = tags.join(' ');
+            renderNotes(filterQuery);
+            renderTodos(); // Add logic for priority and status filtering if needed
+            closeModal('filterModal');
+        }
+
+        function changeTheme() {
+            const theme = document.getElementById('themeSelect').value;
+            document.body.classList.toggle('dark-theme', theme === 'dark');
+        }
+
+        function exportData() {
+            const data = {
+                notes,
+                todos,
+                archived,
+                trashed,
+                settings
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                type: 'application/json'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nota-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showNoteContextMenu(event, id) {
+            event.stopPropagation();
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = `${event.pageX}px`;
+            menu.style.top = `${event.pageY}px`;
+            menu.style.display = 'block';
+
+            menu.innerHTML = `
+                <div onclick="togglePinNote('${id}')">Pin/Unpin</div>
+                <div onclick="toggleFavoriteNote('${id}')">Favorite/Unfavorite</div>
+                <div onclick="editNote('${id}', prompt('Edit note:', notes.find(n => n.id === '${id}').content))">Edit</div>
+                <div onclick="shareNote('${id}')">Share</div>
+                <div onclick="lockNote('${id}')">Lock/Unlock</div>
+                <div onclick="setNotePriority('${id}')">Set Priority</div>
+                <div onclick="addReminderToNote('${id}')">Add Reminder</div>
+                <div onclick="addComment('${id}')">Add Comment</div>
+                <div onclick="addCollaboratorToNote('${id}')">Add Collaborator</div>
+                <div onclick="archiveNote('${id}')">Archive</div>
+                <div onclick="deleteNote('${id}')">Delete</div>
+                <div onclick="duplicateNote('${id}')">Duplicate</div>
+                <div onclick="exportNote('${id}')">Export as PDF</div>
+            `;
+
+            document.addEventListener('click', () => menu.style.display = 'none', {
+                once: true
+            });
+        }
+
+        function showTodoContextMenu(event, id) {
+            event.stopPropagation();
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = `${event.pageX}px`;
+            menu.style.top = `${event.pageY}px`;
+            menu.style.display = 'block';
+
+            menu.innerHTML = `
+                <div onclick="toggleTodo('${id}')">Complete/Uncomplete</div>
+                <div onclick="addSubtask('${id}')">Add Subtask</div>
+                <div onclick="assignTask('${id}')">Assign</div>
+                <div onclick="setTimeEstimate('${id}')">Set Time Estimate</div>
+                <div onclick="logTime('${id}')">Log Time</div>
+                <div onclick="addReminderToTodo('${id}')">Add Reminder</div>
+                <div onclick="setTaskStatus('${id}')">Set Status</div>
+                <div onclick="archiveTodo('${id}')">Archive</div>
+                <div onclick="deleteTodo('${id}')">Delete</div>
+                <div onclick="duplicateTodo('${id}')">Duplicate</div>
+                <div onclick="exportTask('${id}')">Export as PDF</div>
+            `;
+
+            document.addEventListener('click', () => menu.style.display = 'none', {
+                once: true
+            });
+        }
+
+        function duplicateNote(id) {
+            const note = notes.find(n => n.id === id);
+            db.collection(currentUser.uid).doc('notes').collection('items').add({
+                ...note,
+                title: `${note.title} (Copy)`,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                updated: firebase.firestore.FieldValue.serverTimestamp(),
+                pinned: false,
+                favorited: false
+            }).catch(error => console.error('Error duplicating note:', error));
+        }
+
+        function duplicateTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            db.collection(currentUser.uid).doc('todos').collection('items').add({
+                ...todo,
+                title: `${todo.title} (Copy)`,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                updated: firebase.firestore.FieldValue.serverTimestamp(),
+                completed: false,
+                progress: 0
+            }).catch(error => console.error('Error duplicating todo:', error));
+        }
+
+        function restoreItem(id, collection) {
+            db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
+                archived: false,
+                trashed: false,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error restoring item:', error));
+        }
+
+        function deleteItem(id, collection) {
+            db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
+                trashed: true,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error deleting item:', error));
+        }
+
+        function permanentlyDeleteItem(id, collection) {
+            db.collection(currentUser.uid).doc(collection).collection('items').doc(id).delete()
+                .catch(error => console.error('Error permanently deleting item:', error));
+        }
+
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) currentMonth = 11;
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) currentMonth = 0;
+            renderCalendar();
+        }
+
+        function extractMentions(content) {
+            return (content.match(/@\w+/g) || []).map(m => m.slice(1));
+        }
+
+        function highlightTagsAndMentions(content) {
+            return content
+                .replace(/#\w+/g, '<span style="color: var(--primary);">$&</span>')
+                .replace(/@\w+/g, '<span style="color: var(--accent);">$&</span>')
+                .replace(/\/(\w+)/g, '<span style="color: #805ad5;">$&</span>'); // Commands
+        }
+
+        // New Features
+        function addCollaboratorToNote(id) {
+            const email = prompt('Add collaborator email:');
+            if (email && validateEmail(email)) {
+                const note = notes.find(n => n.id === id);
+                const collaborators = [...(note.collaborators || []), email];
+                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                    collaborators,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error adding collaborator:', error));
+            }
+        }
+
+        function exportNote(id) {
+            const note = notes.find(n => n.id === id);
+            const content = `${note.title}\n\n${note.content}\n\nTags: ${note.tags.join(', ')}\nCreated: ${formatDate(note.created)}\nUpdated: ${formatDate(note.updated)}`;
+            const blob = new Blob([content], {
+                type: 'text/plain'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${note.title}.txt`; // Could be enhanced to PDF with a library
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportTask(id) {
+            const todo = todos.find(t => t.id === id);
+            const content = `${todo.title}\n\nPriority: ${todo.priority}\nDue: ${todo.dueDate ? formatDate(new Date(todo.dueDate)) : 'N/A'}\nTags: ${todo.tags.join(', ')}\nEffort: ${todo.effort}/10\nProgress: ${todo.progress}%\nSubtasks:\n${todo.subtasks?.map(s => `- ${s.title} [${s.completed ? 'x' : ' '}]`).join('\n') || 'None'}`;
+            const blob = new Blob([content], {
+                type: 'text/plain'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${todo.title}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function setTaskStatus(id) {
+            const status = prompt('Set status (pending, in-progress, completed, blocked):');
+            const validStatuses = ['pending', 'in-progress', 'completed', 'blocked'];
+            if (validStatuses.includes(status)) {
+                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                    status,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error setting status:', error));
+            } else {
+                alert('Invalid status. Use: pending, in-progress, completed, blocked');
+            }
+        }
+
+        function toggleSelection(event, type, id) {
+            if (event.ctrlKey || event.metaKey) {
+                event.stopPropagation();
+                if (selectedItems.has(id)) {
+                    selectedItems.delete(id);
+                } else {
+                    selectedItems.add(id);
+                }
+                highlightSelectedItems();
+            }
+        }
+
+        function highlightSelectedItems() {
+            document.querySelectorAll('.card, .task-card').forEach(card => {
+                const id = card.getAttribute('onclick')?.match(/'(.*?)'/g)?.[1];
+                if (id && selectedItems.has(id)) {
+                    card.style.border = '2px solid var(--primary)';
+                } else {
+                    card.style.border = 'none';
+                }
+            });
+        }
+
+        function showBulkActions(type) {
+            const items = type === 'notes' ? notes : todos;
+            const bulkItemsList = document.getElementById('bulkItemsList');
+            bulkItemsList.innerHTML = items.map(item => `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="checkbox" ${selectedItems.has(item.id) ? 'checked' : ''} onchange="toggleSelection(null, '${type}', '${item.id}'); highlightSelectedItems()">
+                    <span>${item.title}</span>
+                </div>
+            `).join('');
+            document.getElementById('bulkActionsModal').style.display = 'flex';
+        }
+
+        function executeBulkAction() {
+            const action = document.getElementById('bulkActionType').value;
+            const collection = document.getElementById('pageTitle').textContent.toLowerCase() === 'notes' ? 'notes' : 'todos';
+            selectedItems.forEach(id => {
+                switch (action) {
+                    case 'archive':
+                        collection === 'notes' ? archiveNote(id) : archiveTodo(id);
+                        break;
+                    case 'trash':
+                        collection === 'notes' ? deleteNote(id) : deleteTodo(id);
+                        break;
+                    case 'favorite':
+                        toggleFavoriteNote(id);
+                        break;
+                    case 'pin':
+                        togglePinNote(id);
+                        break;
+                }
+            });
+            closeModal('bulkActionsModal');
+        }
+
+        function notify(message) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Nota', {
+                    body: message
+                });
+            } else if ('Notification' in window && Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') new Notification('Nota', {
+                        body: message
+                    });
+                });
+            }
+        }
+
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.style.left = `${event.pageX + 10}px`;
+            tooltip.style.top = `${event.pageY + 10}px`;
+            tooltip.style.display = 'block';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+
+        function priorityValue(priority) {
+            return {
+                high: 3,
+                medium: 2,
+                low: 1
+            } [priority] || 0;
+        }
+
+        function priorityColor(priority) {
+            return {
+                5: '#ff4444',
+                4: '#ff6b6b',
+                3: '#ffbb33',
+                2: '#ffd700',
+                1: '#38a169'
+            } [priority] || '#e2e8f0';
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // Search and filter
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            renderNotes(e.target.value.toLowerCase());
+        });
+
+        // Auto-save drafts
+        let draftTimeout;
+
+        function autoSaveDraft(elementId, storageKey) {
+            const element = document.getElementById(elementId);
+            element.addEventListener('input', () => {
+                clearTimeout(draftTimeout);
+                draftTimeout = setTimeout(() => {
+                    const content = element.value;
+                    localStorage.setItem(`${storageKey}_${currentUser.uid}`, content);
+                }, settings.autoSaveInterval * 1000);
+            });
+        }
+
+        autoSaveDraft('newNoteContent', 'draft_note');
+        autoSaveDraft('newTodoTitle', 'draft_todo');
+
+        // Load drafts
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const noteDraft = localStorage.getItem(`draft_note_${user.uid}`);
+                if (noteDraft) document.getElementById('newNoteContent').value = noteDraft;
+                const todoDraft = localStorage.getItem(`draft_todo_${user.uid}`);
+                if (todoDraft) document.getElementById('newTodoTitle').value = todoDraft;
+            }
+        });
+
+        // Additional Features
+        function addAttachment(id, collection) {
+            const attachment = prompt('Enter attachment URL:');
+            if (attachment) {
+                const item = (collection === 'notes' ? notes : todos).find(i => i.id === id);
+                const attachments = [...(item.attachments || []), {
+                    url: attachment,
+                    added: new Date().toISOString()
+                }];
+                db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
+                    attachments,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error adding attachment:', error));
+            }
+        }
+
+        function setCustomRecurrence(id) {
+            const pattern = prompt('Enter custom recurrence pattern (e.g., every 2 days):');
+            if (pattern) {
+                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                    recurrence: pattern,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(error => console.error('Error setting recurrence:', error));
+            }
+        }
+
+        function linkNoteToTask(noteId, taskId) {
+            const note = notes.find(n => n.id === noteId);
+            const links = [...(note.links || []), `task:${taskId}`];
+            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
+                links,
+                updated: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => console.error('Error linking note to task:', error));
+        }
+
+        function generateSummary(id, collection) {
+            const item = (collection === 'notes' ? notes : todos).find(i => i.id === id);
+            const summary = item.content ? item.content.substring(0, 100) + '...' : item.title;
+            alert(`Summary: ${summary}`);
+        }
+
+        function setDeadline(id) {
+            const date = prompt('Set deadline (YYYY-MM-DD HH:MM):');
+            if (date) {
+                const deadline = new Date(date);
+                if (!isNaN(deadline.getTime())) {
+                    db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
+                        dueDate: deadline.toISOString(),
+                        updated: firebase.firestore.FieldValue.serverTimestamp()
+                    }).catch(error => console.error('Error setting deadline:', error));
+                }
+            }
+        }
+
+        function createTaskFromNote(id) {
+            const note = notes.find(n => n.id === id);
+            db.collection(currentUser.uid).doc('todos').collection('items').add({
+                title: note.title,
+                priority: 'medium',
+                dueDate: null,
+                tags: note.tags,
+                effort: 1,
+                completed: false,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                updated: firebase.firestore.FieldValue.serverTimestamp(),
+                archived: false,
+                trashed: false,
+                subtasks: [],
+                dependencies: [],
+                recurrence: '',
+                progress: 0,
+                assignees: [],
+                reminders: [],
+                timeEstimate: 0,
+                actualTime: 0,
+                status: 'pending',
+                linkedNote: id
+            }).catch(error => console.error('Error creating task from note:', error));
+        }
+
+        function setCustomCategory() {
+            const category = prompt('Enter custom category:');
+            if (category) {
+                document.getElementById('newNoteCategory').innerHTML += `<option value="${category}">${category}</option>`;
+            }
+        }
+
+        function toggleDarkModeGlobally() {
+            settings.theme = settings.theme === 'light' ? 'dark' : 'light';
+            saveSettings();
+        }
+
+        function bulkTagItems() {
+            const tag = prompt('Enter tag to apply to selected items:');
+            if (tag) {
+                selectedItems.forEach(id => {
+                    const item = notes.find(n => n.id === id) || todos.find(t => t.id === id);
+                    const collection = item.content ? 'notes' : 'todos';
+                    const tags = [...(item.tags || []), tag];
+                    db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
+                        tags,
+                        updated: firebase.firestore.FieldValue.serverTimestamp()
+                    }).catch(error => console.error('Error tagging item:', error));
+                });
+            }
+        }
+
+        function scheduleReview(id, collection) {
+            const date = prompt('Schedule review (YYYY-MM-DD):');
+            if (date) {
+                const reviewDate = new Date(date);
+                if (!isNaN(reviewDate.getTime())) {
+                    db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
+                        reviewDate: reviewDate.toISOString(),
+                        updated: firebase.firestore.FieldValue.serverTimestamp()
+                    }).catch(error => console.error('Error scheduling review:', error));
+                }
+            }
+        }
+
+        // Initial setup
+        showPage('notes');
+        if ('Notification' in window) Notification.requestPermission();
+    </script>
+</body>
+
+</html>
