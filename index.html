@@ -20,6 +20,8 @@
             --accent: #ff4444;
             --success: #38a169;
             --warning: #ffbb33;
+            --error: #e53e3e;
+            --spinner: #a0aec0;
         }
 
         * {
@@ -99,6 +101,7 @@
             padding: 32px;
             overflow-y: auto;
             background: var(--secondary);
+            position: relative;
         }
 
         .header {
@@ -230,6 +233,11 @@
             font-size: 12px;
         }
 
+        button:disabled {
+            background: var(--muted);
+            cursor: not-allowed;
+        }
+
         .calendar-view {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -271,6 +279,10 @@
             justify-content: center;
         }
 
+        .modal.active {
+            display: flex;
+        }
+
         .modal-content {
             background: #ffffff;
             padding: 32px;
@@ -279,6 +291,7 @@
             border-radius: 16px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
             position: relative;
+            overflow-y: auto;
         }
 
         .modal-nav {
@@ -427,6 +440,39 @@
             z-index: 1000;
             display: none;
         }
+
+        .spinner {
+            border: 2px solid var(--spinner);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
     </style>
 </head>
 
@@ -459,7 +505,7 @@
             </div>
             <div class="sidebar-item" onclick="showPage('favorites')" id="favoritesNav">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <span>Favorites</span>
             </div>
@@ -500,7 +546,7 @@
             <div class="header">
                 <h1 id="pageTitle">Notes</h1>
                 <div style="display: flex; gap: 16px; align-items: center;">
-                    <input type="text" id="searchInput" placeholder="Search across all...">
+                    <input type="text" id="searchInput" placeholder="Search across all..." oninput="searchItems()">
                     <button class="secondary" onclick="toggleFilterPanel()">Filters</button>
                     <button onclick="exportData()">Export</button>
                 </div>
@@ -542,6 +588,10 @@
             <div id="trashPage" class="page" style="display: none;">
                 <div id="trashList" style="display: flex; flex-direction: column; gap: 20px;"></div>
             </div>
+
+            <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                <div class="spinner"></div>
+            </div>
         </div>
     </div>
 
@@ -551,8 +601,8 @@
             <input type="email" id="emailInput" placeholder="Email">
             <input type="password" id="passwordInput" placeholder="Password (min 6 characters)">
             <div style="display: flex; gap: 16px; margin-top: 20px;">
-                <button onclick="login()">Login</button>
-                <button class="secondary" onclick="register()">Register</button>
+                <button id="loginBtn" onclick="login()">Login</button>
+                <button class="secondary" id="registerBtn" onclick="register()">Register</button>
             </div>
         </div>
     </div>
@@ -560,7 +610,7 @@
     <div id="createNoteModal" class="modal">
         <div class="modal-content">
             <h2>Create New Note</h2>
-            <input type="text" id="newNoteTitle" placeholder="Title">
+            <input type="text" id="newNoteTitle" placeholder="Title" required>
             <textarea id="newNoteContent" placeholder="Start typing... (supports #tags, @mentions, /commands)"></textarea>
             <div style="display: flex; gap: 16px;">
                 <select id="newNoteCategory">
@@ -581,7 +631,7 @@
             </select>
             <input type="text" id="newNoteLinks" placeholder="Links (comma-separated)">
             <div style="display: flex; gap: 16px; margin-top: 20px;">
-                <button onclick="addNote()">Create</button>
+                <button id="createNoteBtn" onclick="addNote()">Create</button>
                 <button class="secondary" onclick="closeModal('createNoteModal')">Cancel</button>
             </div>
         </div>
@@ -590,7 +640,7 @@
     <div id="createTodoModal" class="modal">
         <div class="modal-content">
             <h2>Create New Task</h2>
-            <input type="text" id="newTodoTitle" placeholder="Task Title">
+            <input type="text" id="newTodoTitle" placeholder="Task Title" required>
             <div style="display: flex; gap: 16px;">
                 <select id="newTodoPriority">
                     <option value="high">High</option>
@@ -611,7 +661,7 @@
             <input type="text" id="newTodoAssignees" placeholder="Assignees (emails, comma-separated)">
             <input type="text" id="newTodoDependencies" placeholder="Dependencies (task IDs, comma-separated)">
             <div style="display: flex; gap: 16px; margin-top: 20px;">
-                <button onclick="addTodo()">Create</button>
+                <button id="createTodoBtn" onclick="addTodo()">Create</button>
                 <button class="secondary" onclick="closeModal('createTodoModal')">Cancel</button>
             </div>
         </div>
@@ -702,7 +752,7 @@
                     <option value="title">Title</option>
                 </select>
             </div>
-            <button onclick="saveSettings(); closeModal('settingsModal')">Save & Close</button>
+            <button onclick="saveSettings()">Save & Close</button>
         </div>
     </div>
 
@@ -754,7 +804,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
-        // Firebase configuration
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDigoOu697kT9ZknbEr0o8ITJrDsxuPp_g",
             authDomain: "votecanvass.firebaseapp.com",
@@ -764,14 +814,15 @@
             appId: "1:697871634440:web:fb70ce4cec51d5568641bd"
         };
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+
+        // State Management
         let currentUser = null;
-        let notes = [],
-            todos = [],
-            archived = [],
-            trashed = [];
+        let notes = [];
+        let todos = [];
         let settings = {
             theme: 'light',
             defaultView: 'notes',
@@ -782,522 +833,73 @@
             taskSort: 'priority',
             noteSort: 'updated'
         };
-        let currentMonth = 1; // February 2025 (0-based)
+        let currentPage = 'notes';
+        let currentMonth = new Date().getMonth(); // Current month
+        let currentYear = new Date().getFullYear();
         let currentNoteIndex = -1;
         let currentDay = null;
         let selectedItems = new Set();
+        let isLoading = false;
 
-        // Authentication
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('authModal').style.display = 'none';
-                initializeUserCollection();
-                loadUserData();
-                loadSettings();
-                showPage(settings.defaultView);
-            } else {
-                currentUser = null;
-                document.getElementById('authModal').style.display = 'flex';
-            }
-        });
-
-        function login() {
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
-            if (!email || !password) {
-                alert('Please enter both email and password.');
-                return;
-            }
-            auth.signInWithEmailAndPassword(email, password)
-                .catch(error => alert(`Login failed: ${error.message}`));
+        // Utility Functions
+        function showLoading() {
+            isLoading = true;
+            document.getElementById('loadingOverlay').style.display = 'flex';
         }
 
-        function register() {
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
-            if (!email || password.length < 6) {
-                alert('Please enter a valid email and password (min 6 characters).');
-                return;
-            }
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Successfully created user, now initialize the collection
-                    currentUser = userCredential.user; // Set currentUser immediately
-                    initializeUserCollection();
-                })
-                .catch(error => alert(`Registration failed: ${error.message}`));
+        function hideLoading() {
+            isLoading = false;
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
 
-        // Ensure auth.onAuthStateChanged still works as expected
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('authModal').style.display = 'none';
-                loadUserData();
-                loadSettings();
-                showPage(settings.defaultView);
-            } else {
-                currentUser = null;
-                document.getElementById('authModal').style.display = 'flex';
-            }
-        });
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
 
-        function logout() {
-            auth.signOut();
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
             selectedItems.clear();
         }
 
-        function initializeUserCollection() {
-            // Use the 'users' collection and create a document with the user's UID
-            const userDocRef = db.collection('users').doc(currentUser.uid);
-            userDocRef.set({
-                    created: firebase.firestore.FieldValue.serverTimestamp(),
-                    userEmail: currentUser.email
-                }, {
-                    merge: true
-                }) // Merge to avoid overwriting if it exists
-                .catch(error => console.error('Error initializing user collection:', error));
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
         }
 
-        function loadUserData() {
-            const userDocRef = db.collection('users').doc(currentUser.uid);
+        function showPage(pageId) {
+            if (currentPage === pageId) return;
+            showLoading();
+            document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
+            document.getElementById(`${pageId}Page`).style.display = 'block';
+            document.getElementById('pageTitle').textContent = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(`${pageId}Nav`).classList.add('active');
+            selectedItems.clear();
+            currentPage = pageId;
 
-            userDocRef.collection('notes')
-                .onSnapshot(snapshot => {
-                    notes = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    renderNotes();
-                    renderFavorites();
-                    renderArchive();
-                    renderTrash();
-                    if (currentNoteIndex >= 0 && currentNoteIndex < notes.length) showNoteDetail(notes[currentNoteIndex].id);
-                }, error => console.error('Error loading notes:', error));
-
-            userDocRef.collection('todos')
-                .onSnapshot(snapshot => {
-                    todos = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    renderTodos();
+            // Render content based on the selected page
+            switch (pageId) {
+                case 'notes':
+                    renderNotes(); // Render active notes only
+                    break;
+                case 'todos':
+                    renderTodos(); // Render active todos only
+                    break;
+                case 'calendar':
                     renderCalendar();
-                    if (currentDay) showDayDetail(currentDay);
-                }, error => console.error('Error loading todos:', error));
-
-            userDocRef.collection('archived')
-                .onSnapshot(snapshot => {
-                    archived = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
+                    break;
+                case 'favorites':
+                    renderFavorites();
+                    break;
+                case 'archive':
                     renderArchive();
-                }, error => console.error('Error loading archived:', error));
-
-            userDocRef.collection('trashed')
-                .onSnapshot(snapshot => {
-                    trashed = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
+                    break;
+                case 'trash':
                     renderTrash();
-                }, error => console.error('Error loading trashed:', error));
-        }
-
-        function loadSettings() {
-            db.collection(currentUser.uid).doc('settings').collection('preferences').doc('user')
-                .get().then(doc => {
-                    if (doc.exists) {
-                        settings = {
-                            ...settings,
-                            ...doc.data()
-                        };
-                        applySettings();
-                    }
-                }).catch(error => console.error('Error loading settings:', error));
-        }
-
-        function saveSettings() {
-            settings.theme = document.getElementById('themeSelect').value;
-            settings.defaultView = document.getElementById('defaultView').value;
-            settings.timeFormat = document.getElementById('timeFormat').value;
-            settings.notifications = document.getElementById('notificationsToggle').checked;
-            settings.autoSaveInterval = parseInt(document.getElementById('autoSaveInterval').value) || 30;
-            settings.maxPreviewChars = parseInt(document.getElementById('maxPreviewChars').value) || 200;
-            settings.taskSort = document.getElementById('taskSort').value;
-            settings.noteSort = document.getElementById('noteSort').value;
-            db.collection(currentUser.uid).doc('settings').collection('preferences').doc('user')
-                .set(settings)
-                .then(() => {
-                    applySettings();
-                    renderNotes();
-                    renderTodos();
-                    closeModal('settingsModal');
-                })
-                .catch(error => console.error('Error saving settings:', error));
-        }
-
-        function applySettings() {
-            document.body.classList.toggle('dark-theme', settings.theme === 'dark');
-            document.getElementById('themeSelect').value = settings.theme;
-            document.getElementById('defaultView').value = settings.defaultView;
-            document.getElementById('timeFormat').value = settings.timeFormat;
-            document.getElementById('notificationsToggle').checked = settings.notifications;
-            document.getElementById('autoSaveInterval').value = settings.autoSaveInterval;
-            document.getElementById('maxPreviewChars').value = settings.maxPreviewChars;
-            document.getElementById('taskSort').value = settings.taskSort;
-            document.getElementById('noteSort').value = settings.noteSort;
-        }
-
-        // Note functions
-        function showCreateNoteModal() {
-            document.getElementById('newNoteTitle').value = '';
-            document.getElementById('newNoteContent').value = '';
-            document.getElementById('newNoteTags').value = '';
-            document.getElementById('newNoteColor').value = '#ffffff';
-            document.getElementById('newNoteCategory').value = 'personal';
-            document.getElementById('noteTemplate').value = '';
-            document.getElementById('newNoteLinks').value = '';
-            document.getElementById('createNoteModal').style.display = 'flex';
-        }
-
-        function addNote() {
-            const title = document.getElementById('newNoteTitle').value.trim();
-            let content = document.getElementById('newNoteContent').value.trim();
-            const category = document.getElementById('newNoteCategory').value;
-            const tags = document.getElementById('newNoteTags').value.split(',').map(t => t.trim()).filter(t => t);
-            const color = document.getElementById('newNoteColor').value;
-            const template = document.getElementById('noteTemplate').value;
-            const links = document.getElementById('newNoteLinks').value.split(',').map(l => l.trim()).filter(l => l);
-
-            if (!title) {
-                alert('Title is required.');
-                return;
+                    break;
             }
-
-            if (template) {
-                switch (template) {
-                    case 'meeting':
-                        content = `Meeting Notes\n- Date: ${new Date().toLocaleDateString()}\n- Attendees:\n- Agenda:\n- Action Items:` + (content ? `\n${content}` : '');
-                        break;
-                    case 'journal':
-                        content = `Journal Entry - ${new Date().toLocaleDateString()}\n- Mood:\n- Highlights:\n- Reflections:` + (content ? `\n${content}` : '');
-                        break;
-                    case 'brainstorm':
-                        content = `Brainstorm Session\n- Topic:\n- Ideas:\n  - \n- Next Steps:` + (content ? `\n${content}` : '');
-                        break;
-                    case 'research':
-                        content = `Research Log\n- Topic:\n- Sources:\n- Findings:\n- Notes:` + (content ? `\n${content}` : '');
-                        break;
-                }
-            }
-
-            db.collection('users').doc(currentUser.uid).collection('notes').add({
-                title,
-                content,
-                category,
-                tags,
-                color,
-                links,
-                created: firebase.firestore.FieldValue.serverTimestamp(),
-                updated: firebase.firestore.FieldValue.serverTimestamp(),
-                pinned: false,
-                favorited: false,
-                archived: false,
-                trashed: false,
-                wordCount: content.split(/\s+/).length,
-                mentions: extractMentions(content),
-                comments: [],
-                attachments: [],
-                versionHistory: [{
-                    content,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }],
-                locked: false,
-                priority: 0,
-                reminders: [],
-                collaborators: []
-            }).then(() => {
-                closeModal('createNoteModal');
-                if (settings.notifications) notify('Note created successfully!');
-            }).catch(error => console.error('Error adding note:', error));
+            hideLoading();
         }
 
-        function editNote(id, newContent) {
-            const note = notes.find(n => n.id === id);
-            if (newContent !== null && newContent !== note.content) {
-                const updatedHistory = [...(note.versionHistory || []), {
-                    content: note.content,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }];
-                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                    content: newContent,
-                    updated: firebase.firestore.FieldValue.serverTimestamp(),
-                    wordCount: newContent.split(/\s+/).length,
-                    mentions: extractMentions(newContent),
-                    versionHistory: updatedHistory
-                }).catch(error => console.error('Error editing note:', error));
-            }
-        }
-
-        // Update other CRUD functions similarly (example for deleteNote)
-        function deleteNote(id) {
-            db.collection('users').doc(currentUser.uid).collection('notes').doc('items').collection('data').doc(id).update({
-                trashed: true,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error deleting note:', error));
-        }
-
-        function togglePinNote(id) {
-            const note = notes.find(n => n.id === id);
-            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                pinned: !note.pinned,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error pinning note:', error));
-        }
-
-        function toggleFavoriteNote(id) {
-            const note = notes.find(n => n.id === id);
-            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                favorited: !note.favorited,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error favoriting note:', error));
-        }
-
-        function archiveNote(id) {
-            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                archived: true,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error archiving note:', error));
-        }
-
-        function shareNote(id) {
-            const note = notes.find(n => n.id === id);
-            const url = `${window.location.origin}/share?note=${id}&user=${currentUser.uid}`;
-            navigator.clipboard.writeText(url).then(() => {
-                alert('Share link copied to clipboard!');
-                if (settings.notifications) notify('Note shared!');
-            }).catch(error => console.error('Error sharing note:', error));
-        }
-
-        function addComment(id) {
-            const comment = prompt('Add a comment:');
-            if (comment) {
-                const note = notes.find(n => n.id === id);
-                const comments = [...(note.comments || []), {
-                    text: comment,
-                    user: currentUser.email,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }];
-                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                    comments,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error adding comment:', error));
-            }
-        }
-
-        function lockNote(id) {
-            const note = notes.find(n => n.id === id);
-            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                locked: !note.locked,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error locking note:', error));
-        }
-
-        function setNotePriority(id) {
-            const priority = parseInt(prompt('Set priority (0-5):', '0')) || 0;
-            if (priority >= 0 && priority <= 5) {
-                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                    priority,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error setting priority:', error));
-            }
-        }
-
-        function addReminderToNote(id) {
-            const date = prompt('Enter reminder date (YYYY-MM-DD HH:MM):');
-            if (date) {
-                const reminderDate = new Date(date);
-                if (isNaN(reminderDate.getTime())) {
-                    alert('Invalid date format.');
-                    return;
-                }
-                const note = notes.find(n => n.id === id);
-                const reminders = [...(note.reminders || []), reminderDate.toISOString()];
-                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                    reminders,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error adding reminder:', error));
-            }
-        }
-
-        // Todo functions
-        function showCreateTodoModal() {
-            document.getElementById('newTodoTitle').value = '';
-            document.getElementById('newTodoDueDate').value = '';
-            document.getElementById('newTodoTags').value = '';
-            document.getElementById('newTodoEffort').value = '';
-            document.getElementById('newTodoPriority').value = 'medium';
-            document.getElementById('todoRecurrence').value = '';
-            document.getElementById('newTodoAssignees').value = '';
-            document.getElementById('newTodoDependencies').value = '';
-            document.getElementById('createTodoModal').style.display = 'flex';
-        }
-
-        // Update addTodo to use the correct path
-        function addTodo() {
-            const title = document.getElementById('newTodoTitle').value.trim();
-            const priority = document.getElementById('newTodoPriority').value;
-            const dueDate = document.getElementById('newTodoDueDate').value;
-            const tags = document.getElementById('newTodoTags').value.split(',').map(t => t.trim()).filter(t => t);
-            const effort = parseInt(document.getElementById('newTodoEffort').value) || 1;
-            const recurrence = document.getElementById('todoRecurrence').value;
-            const assignees = document.getElementById('newTodoAssignees').value.split(',').map(a => a.trim()).filter(a => a);
-            const dependencies = document.getElementById('newTodoDependencies').value.split(',').map(d => d.trim()).filter(d => d);
-
-            if (!title) {
-                alert('Title is required.');
-                return;
-            }
-
-            const todoData = {
-                title,
-                priority,
-                dueDate: dueDate || null,
-                tags,
-                effort,
-                completed: false,
-                created: firebase.firestore.FieldValue.serverTimestamp(),
-                updated: firebase.firestore.FieldValue.serverTimestamp(),
-                archived: false,
-                trashed: false,
-                subtasks: [],
-                dependencies,
-                recurrence,
-                progress: 0,
-                assignees,
-                reminders: [],
-                timeEstimate: 0,
-                actualTime: 0,
-                status: 'pending'
-            };
-            db.collection('users').doc(currentUser.uid).collection('todos').doc('items').collection('data').add(todoData)
-                .then(() => {
-                    closeModal('createTodoModal');
-                    if (settings.notifications) notify('Task created successfully!');
-                })
-                .catch(error => console.error('Error adding todo:', error));
-        }
-
-        function toggleTodo(id) {
-            const todo = todos.find(t => t.id === id);
-            db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                completed: !todo.completed,
-                updated: firebase.firestore.FieldValue.serverTimestamp(),
-                progress: !todo.completed ? 100 : 0,
-                status: !todo.completed ? 'completed' : 'pending'
-            }).catch(error => console.error('Error toggling todo:', error));
-        }
-
-        function deleteTodo(id) {
-            db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                trashed: true,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error deleting todo:', error));
-        }
-
-        function archiveTodo(id) {
-            db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                archived: true,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error archiving todo:', error));
-        }
-
-        function addSubtask(id) {
-            const subtaskTitle = prompt('Enter subtask:');
-            if (subtaskTitle) {
-                const todo = todos.find(t => t.id === id);
-                const subtasks = [...(todo.subtasks || []), {
-                    title: subtaskTitle,
-                    completed: false,
-                    created: new Date().toISOString()
-                }];
-                const progress = subtasks.length ? (subtasks.filter(s => s.completed).length / subtasks.length) * 100 : 0;
-                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                    subtasks,
-                    progress,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error adding subtask:', error));
-            }
-        }
-
-        function toggleSubtask(todoId, subtaskIndex) {
-            const todo = todos.find(t => t.id === todoId);
-            const subtasks = [...todo.subtasks];
-            subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
-            const progress = subtasks.length ? (subtasks.filter(s => s.completed).length / subtasks.length) * 100 : 0;
-            db.collection(currentUser.uid).doc('todos').collection('items').doc(todoId).update({
-                subtasks,
-                progress,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error toggling subtask:', error));
-        }
-
-        function assignTask(id) {
-            const email = prompt('Assign to email:');
-            if (email && validateEmail(email)) {
-                const todo = todos.find(t => t.id === id);
-                const assignees = [...(todo.assignees || []), email];
-                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                    assignees,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error assigning task:', error));
-            } else {
-                alert('Invalid email address.');
-            }
-        }
-
-        function setTimeEstimate(id) {
-            const time = parseInt(prompt('Set time estimate (minutes):', '0')) || 0;
-            if (time >= 0) {
-                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                    timeEstimate: time,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error setting time estimate:', error));
-            }
-        }
-
-        function logTime(id) {
-            const time = parseInt(prompt('Log actual time spent (minutes):', '0')) || 0;
-            if (time >= 0) {
-                const todo = todos.find(t => t.id === id);
-                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                    actualTime: (todo.actualTime || 0) + time,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error logging time:', error));
-            }
-        }
-
-        function addReminderToTodo(id) {
-            const date = prompt('Enter reminder date (YYYY-MM-DD HH:MM):');
-            if (date) {
-                const reminderDate = new Date(date);
-                if (isNaN(reminderDate.getTime())) {
-                    alert('Invalid date format.');
-                    return;
-                }
-                const todo = todos.find(t => t.id === id);
-                const reminders = [...(todo.reminders || []), reminderDate.toISOString()];
-                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                    reminders,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error adding reminder:', error));
-            }
-        }
-
-        // Rendering functions
         function formatDate(timestamp) {
             if (!timestamp) return 'N/A';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -1319,104 +921,760 @@
             return date.toLocaleString('en-US', options);
         }
 
-        function renderNotes(filter = '') {
-            const notesList = document.getElementById('notesList');
-            let filteredNotes = notes.filter(n => !n.archived && !n.trashed &&
-                (n.title.toLowerCase().includes(filter) || n.content.toLowerCase().includes(filter) || n.tags.some(t => t.toLowerCase().includes(filter))));
-
-            switch (settings.noteSort) {
-                case 'created':
-                    filteredNotes.sort((a, b) => b.created?.toDate() - a.created?.toDate());
-                    break;
-                case 'title':
-                    filteredNotes.sort((a, b) => a.title.localeCompare(b.title));
-                    break;
-                default: // updated
-                    filteredNotes.sort((a, b) => (b.pinned - a.pinned) || (b.updated?.toDate() - a.updated?.toDate()));
-            }
-
-            notesList.innerHTML = filteredNotes.map(note => {
-                const preview = note.content.length > settings.maxPreviewChars ?
-                    note.content.substring(0, settings.maxPreviewChars) + '...' : note.content;
-                return `
-                    <div class="card" style="background: ${note.color};" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
-                        <h3 style="font-size: 18px; font-weight: 600;">${note.title}</h3>
-                        <p class="note-preview">${highlightTagsAndMentions(preview)}</p>
-                        <div>${note.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
-                        <div style="font-size: 12px; color: var(--muted); margin-top: 12px;">
-                            <span>${note.category}</span> • <span>${formatDate(note.updated)}</span>
-                            ${note.locked ? '<span class="badge">Locked</span>' : ''}
-                            ${note.priority > 0 ? `<span class="badge" style="background: ${priorityColor(note.priority)};">P${note.priority}</span>` : ''}
-                        </div>
-                        <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
 
-        function renderTodos() {
-            const todosList = document.getElementById('todosList');
-            let filteredTodos = todos.filter(t => !t.archived && !t.trashed);
+        auth.onAuthStateChanged(async user => {
+            showLoading();
+            if (user) {
+                currentUser = user;
+                closeModal('authModal');
+                await initializeUserCollection();
+                await loadUserData();
+                await loadSettings();
+                showPage(settings.defaultView); // This will render the default view
+            } else {
+                currentUser = null;
+                notes = [];
+                todos = [];
+                showModal('authModal');
+                renderNotes(); // Clear notes display
+                renderTodos(); // Clear todos display
+            }
+            hideLoading();
+        });
 
-            switch (settings.taskSort) {
-                case 'dueDate':
-                    filteredTodos.sort((a, b) => (a.dueDate || 'Z') > (b.dueDate || 'Z') ? 1 : -1);
-                    break;
-                case 'created':
-                    filteredTodos.sort((a, b) => b.created?.toDate() - a.created?.toDate());
-                    break;
-                default: // priority
-                    filteredTodos.sort((a, b) => a.completed - b.completed || (priorityValue(a.priority) - priorityValue(b.priority)));
+        async function login() {
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const loginBtn = document.getElementById('loginBtn');
+            if (!email || !password) return alert('Email and password are required.');
+            showLoading();
+            loginBtn.disabled = true;
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                alert(`Login failed: ${error.message}`);
+            } finally {
+                loginBtn.disabled = false;
+                hideLoading();
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const registerBtn = document.getElementById('registerBtn');
+            if (!email || password.length < 6) return alert('Enter a valid email and password (min 6 characters).');
+            showLoading();
+            registerBtn.disabled = true;
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                alert(`Registration failed: ${error.message}`);
+            } finally {
+                registerBtn.disabled = false;
+                hideLoading();
+            }
+        }
+
+        function logout() {
+            showLoading();
+            auth.signOut().then(() => {
+                selectedItems.clear();
+                hideLoading();
+            }).catch(error => {
+                alert(`Logout failed: ${error.message}`);
+                hideLoading();
+            });
+        }
+
+        async function initializeUserCollection() {
+            const userRef = db.collection('users').doc(currentUser.uid);
+            try {
+                await userRef.set({
+                    email: currentUser.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, {
+                    merge: true
+                });
+            } catch (error) {
+                console.error('Error initializing user:', error);
+                throw error;
+            }
+        }
+
+        async function loadUserData() {
+            const userRef = db.collection('users').doc(currentUser.uid);
+            showLoading();
+            try {
+                // Notes listener
+                userRef.collection('notes').onSnapshot(snapshot => {
+                    notes = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    console.log('Notes loaded:', notes); // Debugging: Check if data is received
+                    if (currentPage === 'notes') renderNotes();
+                    if (currentPage === 'favorites') renderFavorites();
+                    if (currentPage === 'archive') renderArchive();
+                    if (currentPage === 'trash') renderTrash();
+                    if (currentNoteIndex >= 0 && currentNoteIndex < notes.length) showNoteDetail(notes[currentNoteIndex].id);
+                }, error => {
+                    console.error('Notes snapshot error:', error);
+                    alert('Failed to load notes: ' + error.message);
+                    hideLoading();
+                });
+
+                // Todos listener
+                userRef.collection('todos').onSnapshot(snapshot => {
+                    todos = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    console.log('Todos loaded:', todos); // Debugging: Check if data is received
+                    if (currentPage === 'todos') renderTodos();
+                    if (currentPage === 'calendar') renderCalendar();
+                    if (currentPage === 'archive') renderArchive();
+                    if (currentPage === 'trash') renderTrash();
+                    if (currentDay) showDayDetail(currentDay);
+                }, error => {
+                    console.error('Todos snapshot error:', error);
+                    alert('Failed to load todos: ' + error.message);
+                    hideLoading();
+                });
+
+                // Initial render to ensure UI updates immediately
+                renderNotes();
+                renderTodos();
+            } catch (error) {
+                console.error('Error in loadUserData:', error);
+                alert('Failed to initialize data listeners: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadSettings() {
+            const settingsRef = db.collection('users').doc(currentUser.uid).collection('settings').doc('preferences');
+            try {
+                const doc = await settingsRef.get();
+                if (doc.exists) {
+                    settings = {
+                        ...settings,
+                        ...doc.data()
+                    };
+                    applySettings();
+                } else {
+                    await settingsRef.set(settings);
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                alert('Failed to load settings: ' + error.message);
+            }
+        }
+
+        async function saveSettings() {
+            const settingsRef = db.collection('users').doc(currentUser.uid).collection('settings').doc('preferences');
+            showLoading();
+            try {
+                settings.theme = document.getElementById('themeSelect').value;
+                settings.defaultView = document.getElementById('defaultView').value;
+                settings.timeFormat = document.getElementById('timeFormat').value;
+                settings.notifications = document.getElementById('notificationsToggle').checked;
+                settings.autoSaveInterval = Math.max(5, parseInt(document.getElementById('autoSaveInterval').value) || 30);
+                settings.maxPreviewChars = Math.max(100, parseInt(document.getElementById('maxPreviewChars').value) || 200);
+                settings.taskSort = document.getElementById('taskSort').value;
+                settings.noteSort = document.getElementById('noteSort').value;
+                await settingsRef.set(settings, {
+                    merge: true
+                });
+                applySettings();
+                closeModal('settingsModal');
+            } catch (error) {
+                alert('Failed to save settings: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function applySettings() {
+            document.body.classList.toggle('dark-theme', settings.theme === 'dark');
+            document.getElementById('themeSelect').value = settings.theme;
+            document.getElementById('defaultView').value = settings.defaultView;
+            document.getElementById('timeFormat').value = settings.timeFormat;
+            document.getElementById('notificationsToggle').checked = settings.notifications;
+            document.getElementById('autoSaveInterval').value = settings.autoSaveInterval;
+            document.getElementById('maxPreviewChars').value = settings.maxPreviewChars;
+            document.getElementById('taskSort').value = settings.taskSort;
+            document.getElementById('noteSort').value = settings.noteSort;
+        }
+
+        // Note Functions
+        function showCreateNoteModal() {
+            document.getElementById('newNoteTitle').value = '';
+            document.getElementById('newNoteContent').value = '';
+            document.getElementById('newNoteTags').value = '';
+            document.getElementById('newNoteColor').value = '#ffffff';
+            document.getElementById('newNoteCategory').value = 'personal';
+            document.getElementById('noteTemplate').value = '';
+            document.getElementById('newNoteLinks').value = '';
+            showModal('createNoteModal');
+        }
+
+        async function addNote() {
+            if (!currentUser) return alert('Please log in to create a note.');
+            const title = document.getElementById('newNoteTitle').value.trim();
+            if (!title) return alert('Title is required.');
+            let content = document.getElementById('newNoteContent').value.trim();
+            const category = document.getElementById('newNoteCategory').value;
+            const tags = document.getElementById('newNoteTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const color = document.getElementById('newNoteColor').value;
+            const template = document.getElementById('noteTemplate').value;
+            const links = document.getElementById('newNoteLinks').value.split(',').map(l => l.trim()).filter(l => l);
+
+            if (template) {
+                switch (template) {
+                    case 'meeting':
+                        content = `Meeting Notes\n- Date: ${new Date().toLocaleDateString()}\n- Attendees:\n- Agenda:\n- Action Items:\n${content}`;
+                        break;
+                    case 'journal':
+                        content = `Journal Entry - ${new Date().toLocaleDateString()}\n- Mood:\n- Highlights:\n- Reflections:\n${content}`;
+                        break;
+                    case 'brainstorm':
+                        content = `Brainstorm Session\n- Topic:\n- Ideas:\n  - \n- Next Steps:\n${content}`;
+                        break;
+                    case 'research':
+                        content = `Research Log\n- Topic:\n- Sources:\n- Findings:\n- Notes:\n${content}`;
+                        break;
+                }
             }
 
-            todosList.innerHTML = filteredTodos.map(todo => `
-                <div class="task-card priority-${todo.priority}" onclick="toggleSelection(event, 'todo', '${todo.id}')">
-                    <div class="task-header">
-                        <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo('${todo.id}')" onmouseover="showTooltip(event, '${todo.completed ? 'Mark as incomplete' : 'Mark as complete'}')" onmouseout="hideTooltip()">
-                        <div style="flex: 1;">
-                            <span style="font-size: 16px; font-weight: 500; ${todo.completed ? 'text-decoration: line-through; color: var(--muted);' : ''}">${todo.title}</span>
-                            ${todo.dueDate ? `<small style="display: block; margin-top: 4px;">Due: ${formatDate(new Date(todo.dueDate))}</small>` : ''}
-                        </div>
-                    </div>
-                    <div class="task-details">
-                        ${todo.tags.length ? `<span>${todo.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</span>` : ''}
-                        <span>Effort: ${todo.effort}/10</span>
-                        <span>Progress: ${Math.round(todo.progress)}%</span>
-                        ${todo.assignees?.length ? `<span>Assigned: ${todo.assignees.join(', ')}</span>` : ''}
-                        ${todo.timeEstimate ? `<span>Est: ${todo.timeEstimate}m</span>` : ''}
-                        ${todo.actualTime ? `<span>Spent: ${todo.actualTime}m</span>` : ''}
-                    </div>
-                    ${todo.subtasks?.length ? `
-                        <div class="progress-bar"><div class="progress-bar-fill" style="width: ${todo.progress}%"></div></div>
-                        <div style="margin-top: 12px;">
-                            ${todo.subtasks.map((s, i) => `
-                                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                                    <input type="checkbox" ${s.completed ? 'checked' : ''} onchange="toggleSubtask('${todo.id}', ${i})">
-                                    <span ${s.completed ? 'style="text-decoration: line-through; color: var(--muted);"' : ''}>${s.title}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                    <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
-                    </div>
-                </div>
-            `).join('');
+            const createBtn = document.getElementById('createNoteBtn');
+            showLoading();
+            createBtn.disabled = true;
+
+            try {
+                // Use client-side timestamp for versionHistory to avoid serverTimestamp in arrays
+                const initialTimestamp = new Date().toISOString();
+
+                const noteData = {
+                    title,
+                    content,
+                    category,
+                    tags,
+                    color,
+                    links,
+                    created: firebase.firestore.FieldValue.serverTimestamp(),
+                    updated: firebase.firestore.FieldValue.serverTimestamp(),
+                    pinned: false,
+                    favorited: false,
+                    archived: false,
+                    trashed: false,
+                    wordCount: content.split(/\s+/).filter(w => w.length > 0).length,
+                    mentions: extractMentions(content),
+                    comments: [],
+                    attachments: [],
+                    versionHistory: [{
+                        content,
+                        timestamp: initialTimestamp
+                    }], // Client-side timestamp
+                    locked: false,
+                    priority: 0,
+                    reminders: [],
+                    collaborators: []
+                };
+
+                // Add the document to Firestore
+                await db.collection('users').doc(currentUser.uid).collection('notes').add(noteData);
+
+                closeModal('createNoteModal');
+                if (settings.notifications) notify('Note created successfully!');
+            } catch (error) {
+                alert('Failed to create note: ' + error.message);
+            } finally {
+                createBtn.disabled = false;
+                hideLoading();
+            }
+        }
+
+        async function editNote(id, newContent) {
+            const note = notes.find(n => n.id === id);
+            if (!note || newContent === null || newContent === note.content) return;
+            showLoading();
+            try {
+                const updatedHistory = [...(note.versionHistory || []), {
+                    content: note.content,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }];
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    content: newContent,
+                    updated: firebase.firestore.FieldValue.serverTimestamp(),
+                    wordCount: newContent.split(/\s+/).length,
+                    mentions: extractMentions(newContent),
+                    versionHistory: updatedHistory
+                });
+            } catch (error) {
+                alert('Failed to edit note: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteNote(id) {
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    trashed: true,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to delete note: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function togglePinNote(id) {
+            const note = notes.find(n => n.id === id);
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    pinned: !note.pinned,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to toggle pin: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function toggleFavoriteNote(id) {
+            const note = notes.find(n => n.id === id);
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    favorited: !note.favorited,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to toggle favorite: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function archiveNote(id) {
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    archived: true,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to archive note: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function shareNote(id) {
+            const note = notes.find(n => n.id === id);
+            if (!note) return;
+            const url = `${window.location.origin}/share?note=${id}&user=${currentUser.uid}`;
+            try {
+                await navigator.clipboard.writeText(url);
+                alert('Share link copied to clipboard!');
+                if (settings.notifications) notify('Note shared!');
+            } catch (error) {
+                alert('Failed to copy share link: ' + error.message);
+            }
+        }
+
+        async function addComment(id) {
+            const comment = prompt('Add a comment:');
+            if (!comment) return;
+            const note = notes.find(n => n.id === id);
+            if (!note) return;
+            showLoading();
+            try {
+                const comments = [...(note.comments || []), {
+                    text: comment,
+                    user: currentUser.email,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }];
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    comments,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to add comment: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function lockNote(id) {
+            const note = notes.find(n => n.id === id);
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    locked: !note.locked,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to toggle lock: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function setNotePriority(id) {
+            const priority = parseInt(prompt('Set priority (0-5):', '0')) || 0;
+            if (priority < 0 || priority > 5) return alert('Priority must be between 0 and 5.');
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    priority,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to set priority: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function addReminderToNote(id) {
+            const date = prompt('Enter reminder date (YYYY-MM-DD HH:MM):');
+            if (!date) return;
+            const reminderDate = new Date(date);
+            if (isNaN(reminderDate.getTime())) return alert('Invalid date format.');
+            const note = notes.find(n => n.id === id);
+            showLoading();
+            try {
+                const reminders = [...(note.reminders || []), reminderDate.toISOString()];
+                await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
+                    reminders,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to add reminder: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Todo Functions
+        function showCreateTodoModal() {
+            document.getElementById('newTodoTitle').value = '';
+            document.getElementById('newTodoDueDate').value = '';
+            document.getElementById('newTodoTags').value = '';
+            document.getElementById('newTodoEffort').value = '';
+            document.getElementById('newTodoPriority').value = 'medium';
+            document.getElementById('todoRecurrence').value = '';
+            document.getElementById('newTodoAssignees').value = '';
+            document.getElementById('newTodoDependencies').value = '';
+            showModal('createTodoModal');
+        }
+
+        async function addTodo() {
+            if (!currentUser) return alert('Please log in to create a task.');
+            const title = document.getElementById('newTodoTitle').value.trim();
+            if (!title) return alert('Title is required.');
+            const priority = document.getElementById('newTodoPriority').value;
+            const dueDate = document.getElementById('newTodoDueDate').value || null;
+            const tags = document.getElementById('newTodoTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const effort = Math.min(10, Math.max(1, parseInt(document.getElementById('newTodoEffort').value) || 1));
+            const recurrence = document.getElementById('todoRecurrence').value;
+            const assignees = document.getElementById('newTodoAssignees').value.split(',').map(a => a.trim()).filter(a => a && validateEmail(a));
+            const dependencies = document.getElementById('newTodoDependencies').value.split(',').map(d => d.trim()).filter(d => d);
+
+            const createBtn = document.getElementById('createTodoBtn');
+            showLoading();
+            createBtn.disabled = true;
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('todos').add({
+                    title,
+                    priority,
+                    dueDate,
+                    tags,
+                    effort,
+                    completed: false,
+                    created: firebase.firestore.FieldValue.serverTimestamp(),
+                    updated: firebase.firestore.FieldValue.serverTimestamp(),
+                    archived: false,
+                    trashed: false,
+                    subtasks: [],
+                    dependencies,
+                    recurrence,
+                    progress: 0,
+                    assignees,
+                    reminders: [],
+                    timeEstimate: 0,
+                    actualTime: 0,
+                    status: 'pending'
+                });
+                closeModal('createTodoModal');
+                if (settings.notifications) notify('Task created successfully!');
+            } catch (error) {
+                alert('Failed to create task: ' + error.message);
+            } finally {
+                createBtn.disabled = false;
+                hideLoading();
+            }
+        }
+
+        async function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
+                    completed: !todo.completed,
+                    updated: firebase.firestore.FieldValue.serverTimestamp(),
+                    progress: !todo.completed ? 100 : 0,
+                    status: !todo.completed ? 'completed' : 'pending'
+                });
+            } catch (error) {
+                alert('Failed to toggle task: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteTodo(id) {
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
+                    trashed: true,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to delete task: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function archiveTodo(id) {
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
+                    archived: true,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to archive task: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function addSubtask(id) {
+            const subtaskTitle = prompt('Enter subtask:');
+            if (!subtaskTitle) return;
+            const todo = todos.find(t => t.id === id);
+            showLoading();
+            try {
+                const subtasks = [...(todo.subtasks || []), {
+                    title: subtaskTitle,
+                    completed: false,
+                    created: new Date().toISOString()
+                }];
+                const progress = subtasks.length ? (subtasks.filter(s => s.completed).length / subtasks.length) * 100 : 0;
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
+                    subtasks,
+                    progress,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to add subtask: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function toggleSubtask(todoId, subtaskIndex) {
+            const todo = todos.find(t => t.id === todoId);
+            const subtasks = [...todo.subtasks];
+            subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
+            const progress = subtasks.length ? (subtasks.filter(s => s.completed).length / subtasks.length) * 100 : 0;
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(todoId).update({
+                    subtasks,
+                    progress,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to toggle subtask: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function assignTask(id) {
+            const email = prompt('Assign to email:');
+            if (!email || !validateEmail(email)) return alert('Invalid email address.');
+            const todo = todos.find(t => t.id === id);
+            showLoading();
+            try {
+                const assignees = [...(todo.assignees || []), email];
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
+                    assignees,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to assign task: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function setTimeEstimate(id) {
+            const time = parseInt(prompt('Set time estimate (minutes):', '0')) || 0;
+            if (time < 0) return alert('Time estimate cannot be negative.');
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
+                    timeEstimate: time,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to set time estimate: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function logTime(id) {
+            const time = parseInt(prompt('Log time spent (minutes):', '0')) || 0;
+            if (time < 0) return alert('Time cannot be negative.');
+            const todo = todos.find(t => t.id === id);
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
+                    actualTime: (todo.actualTime || 0) + time,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to log time: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function addReminderToTodo(id) {
+            const date = prompt('Enter reminder date (YYYY-MM-DD HH:MM):');
+            if (!date) return;
+            const reminderDate = new Date(date);
+            if (isNaN(reminderDate.getTime())) return alert('Invalid date format.');
+            const todo = todos.find(t => t.id === id);
+            showLoading();
+            try {
+                const reminders = [...(todo.reminders || []), reminderDate.toISOString()];
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
+                    reminders,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to add reminder: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderNotes(filter = '') {
+            const notesList = document.getElementById('notesList');
+            if (!notesList) {
+                console.error('notesList element not found in DOM');
+                return;
+            }
+
+            // Minimal filtering: only exclude trashed and archived notes
+            let filteredNotes = notes.filter(n => !n.trashed && !n.archived);
+
+            // Apply search filter if provided
+            if (filter) {
+                const lowerFilter = filter.toLowerCase();
+                filteredNotes = filteredNotes.filter(n =>
+                    (n.title && n.title.toLowerCase().includes(lowerFilter)) ||
+                    (n.content && n.content.toLowerCase().includes(lowerFilter)) ||
+                    (n.tags && n.tags.some(t => t.toLowerCase().includes(lowerFilter)))
+                );
+            }
+
+            // Sort notes (keeping your original logic)
+            switch (settings.noteSort) {
+                case 'created':
+                    filteredNotes.sort((a, b) => (b.created?.toDate() || new Date(0)) - (a.created?.toDate() || new Date(0)));
+                    break;
+                case 'title':
+                    filteredNotes.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+                    break;
+                default:
+                    filteredNotes.sort((a, b) => (b.pinned || 0) - (a.pinned || 0) || ((b.updated?.toDate() || new Date(0)) - (a.updated?.toDate() || new Date(0))));
+            }
+
+            // Render notes with basic structure, ensuring all data is handled safely
+            notesList.innerHTML = filteredNotes.length ? filteredNotes.map(note => {
+                const title = note.title || 'Untitled';
+                const content = note.content || 'No content';
+                const updated = note.updated ? formatDate(note.updated) : 'N/A';
+                const tags = Array.isArray(note.tags) ? note.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : '';
+
+                return `
+            <div class="card" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
+                <h3 style="font-size: 18px; font-weight: 600;">${title}</h3>
+                <p class="note-preview">${content.substring(0, settings.maxPreviewChars)}${content.length > settings.maxPreviewChars ? '...' : ''}</p>
+                <div>${tags}</div>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 12px;">Updated: ${updated}</p>
+            </div>
+        `;
+            }).join('') : '<p style="text-align: center; color: var(--muted);">No notes found.</p>';
+
+            // Debugging: Log the notes being rendered
+            console.log('Notes to render:', filteredNotes);
+        }
+
+        function renderTodos(filteredTodos = null) {
+            const todosList = document.getElementById('todosList');
+            let todosToRender = filteredTodos || todos.filter(t => !t.archived && !t.trashed);
+
+            // Sort todos (unchanged)
+            switch (settings.taskSort) {
+                case 'dueDate':
+                    todosToRender.sort((a, b) => (a.dueDate || 'Z') > (b.dueDate || 'Z') ? 1 : -1);
+                    break;
+                case 'created':
+                    todosToRender.sort((a, b) => (b.created?.toDate() || 0) - (a.created?.toDate() || 0));
+                    break;
+                default:
+                    todosToRender.sort((a, b) => a.completed - b.completed || (priorityValue(a.priority) - priorityValue(b.priority)));
+            }
+
+            // Simplified rendering for debugging
+            todosList.innerHTML = todosToRender.length ? todosToRender.map(todo => `
+        <div class="task-card">
+            <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo('${todo.id}')">
+            <span>${todo.title}</span>
+            <p>Due: ${todo.dueDate ? formatDate(new Date(todo.dueDate)) : 'N/A'}</p>
+        </div>
+    `).join('') : '<p>No tasks found.</p>';
+
+            console.log('Rendering todos:', todosToRender); // Debugging: Verify filtered data
         }
 
         function renderCalendar() {
             const calendarView = document.getElementById('calendarView');
-            const year = 2025;
-            const daysInMonth = new Date(year, currentMonth + 1, 0).getDate();
-            const firstDay = new Date(year, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             let html = '';
-            for (let i = 0; i < firstDay; i++) {
-                html += '<div class="calendar-day" style="background: var(--hover);"></div>';
-            }
+            for (let i = 0; i < firstDay; i++) html += '<div class="calendar-day" style="background: var(--hover);"></div>';
             for (let i = 1; i <= daysInMonth; i++) {
-                const date = new Date(year, currentMonth, i);
+                const date = new Date(currentYear, currentMonth, i);
                 const isToday = date.toDateString() === new Date().toDateString();
                 const dayTodos = todos.filter(t => t.dueDate && new Date(t.dueDate).toDateString() === date.toDateString());
                 html += `
@@ -1431,7 +1689,7 @@
                 `;
             }
             calendarView.innerHTML = html;
-            document.getElementById('calendarMonth').textContent = new Date(year, currentMonth).toLocaleString('en-US', {
+            document.getElementById('calendarMonth').textContent = new Date(currentYear, currentMonth).toLocaleString('en-US', {
                 month: 'long',
                 year: 'numeric'
             });
@@ -1439,78 +1697,66 @@
 
         function renderFavorites() {
             const favoritesList = document.getElementById('favoritesList');
-            favoritesList.innerHTML = notes
-                .filter(n => n.favorited)
-                .map(note => `
-                    <div class="card" style="background: ${note.color};" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
-                        <h3 style="font-size: 18px; font-weight: 600;">${note.title}</h3>
-                        <p class="note-preview">${highlightTagsAndMentions(note.content.substring(0, settings.maxPreviewChars) + (note.content.length > settings.maxPreviewChars ? '...' : ''))}</p>
-                        <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
-                        </div>
+            const favoriteNotes = notes.filter(n => n.favorited && !n.archived && !n.trashed);
+            favoritesList.innerHTML = favoriteNotes.length ? favoriteNotes.map(note => `
+                <div class="card" style="background: ${note.color};" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
+                    <h3 style="font-size: 18px; font-weight: 600;">${note.title}</h3>
+                    <p class="note-preview">${highlightTagsAndMentions(note.content.substring(0, settings.maxPreviewChars) + (note.content.length > settings.maxPreviewChars ? '...' : ''))}</p>
+                    <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()" onclick="showNoteContextMenu(event, '${note.id}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
                     </div>
-                `).join('');
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--muted);">No favorites found.</p>';
         }
 
         function renderArchive() {
             const archiveList = document.getElementById('archiveList');
-            archiveList.innerHTML = [...notes.filter(n => n.archived), ...todos.filter(t => t.archived)]
-                .map(item => `
-                    <div class="card" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
-                        <h3 style="font-size: 18px; font-weight: 600;">${item.title}</h3>
-                        ${item.content ? `<p>${highlightTagsAndMentions(item.content.substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : ''))}</p>` : ''}
-                        <div style="display: flex; gap: 12px; margin-top: 16px;">
-                            <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
-                            <button class="small secondary" onclick="deleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete</button>
-                        </div>
+            const archivedItems = [...notes.filter(n => n.archived && !n.trashed), ...todos.filter(t => t.archived && !t.trashed)];
+            archiveList.innerHTML = archivedItems.length ? archivedItems.map(item => `
+                <div class="card" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
+                    <h3 style="font-size: 18px; font-weight: 600;">${item.title}</h3>
+                    ${item.content ? `<p>${highlightTagsAndMentions(item.content.substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : ''))}</p>` : ''}
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">
+                        <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
+                        <button class="small secondary" onclick="deleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete</button>
                     </div>
-                `).join('');
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--muted);">No archived items found.</p>';
         }
 
         function renderTrash() {
             const trashList = document.getElementById('trashList');
-            trashList.innerHTML = [...notes.filter(n => n.trashed), ...todos.filter(t => t.trashed)]
-                .map(item => `
-                    <div class="card" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
-                        <h3 style="font-size: 18px; font-weight: 600;">${item.title}</h3>
-                        ${item.content ? `<p>${highlightTagsAndMentions(item.content.substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : ''))}</p>` : ''}
-                        <div style="display: flex; gap: 12px; margin-top: 16px;">
-                            <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
-                            <button class="small secondary" onclick="permanentlyDeleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete Forever</button>
-                        </div>
+            const trashedItems = [...notes.filter(n => n.trashed), ...todos.filter(t => t.trashed)];
+            trashList.innerHTML = trashedItems.length ? trashedItems.map(item => `
+                <div class="card" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
+                    <h3 style="font-size: 18px; font-weight: 600;">${item.title}</h3>
+                    ${item.content ? `<p>${highlightTagsAndMentions(item.content.substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : ''))}</p>` : ''}
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">
+                        <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
+                        <button class="small secondary" onclick="permanentlyDeleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete Forever</button>
                     </div>
-                `).join('');
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--muted);">No trashed items found.</p>';
         }
 
-        // Detail views
         function showNoteDetail(id) {
             const note = notes.find(n => n.id === id);
+            if (!note) return;
             currentNoteIndex = notes.findIndex(n => n.id === id);
             const detailContent = document.getElementById('noteDetailContent');
             detailContent.innerHTML = `
                 <h2 style="font-size: 24px; font-weight: 700;">${note.title}</h2>
                 <textarea id="noteDetailEdit" style="min-height: 250px;" ${note.locked ? 'disabled' : ''}>${note.content}</textarea>
                 <div style="font-size: 12px; color: var(--muted); margin-top: 12px;">
-                    <span>Category: ${note.category}</span> • 
-                    <span>Words: ${note.wordCount}</span> • 
-                    <span>Created: ${formatDate(note.created)}</span> • 
-                    <span>Updated: ${formatDate(note.updated)}</span>
+                    <span>Category: ${note.category}</span> • <span>Words: ${note.wordCount}</span> • 
+                    <span>Created: ${formatDate(note.created)}</span> • <span>Updated: ${formatDate(note.updated)}</span>
                     ${note.priority > 0 ? `<span class="badge" style="background: ${priorityColor(note.priority)};">P${note.priority}</span>` : ''}
                 </div>
                 <div>${note.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
                 ${note.links?.length ? `<div style="margin-top: 12px;"><strong>Links:</strong> ${note.links.map(l => `<a href="${l}" target="_blank">${l}</a>`).join(', ')}</div>` : ''}
-                ${note.comments?.length ? `
-                    <h3 style="margin-top: 20px;">Comments</h3>
-                    ${note.comments.map(c => `<p style="font-size: 14px;"><strong>${c.user}</strong> (${formatDate(c.timestamp)}): ${c.text}</p>`).join('')}
-                ` : ''}
-                ${note.versionHistory?.length > 1 ? `
-                    <h3 style="margin-top: 20px;">Version History</h3>
-                    ${note.versionHistory.map((v, i) => `<p style="font-size: 12px;">${formatDate(v.timestamp)}: ${v.content.substring(0, 50)}...</p>`).join('')}
-                ` : ''}
-                ${note.reminders?.length ? `
-                    <h3 style="margin-top: 20px;">Reminders</h3>
-                    ${note.reminders.map(r => `<p style="font-size: 12px;">${formatDate(new Date(r))}</p>`).join('')}
-                ` : ''}
+                ${note.comments?.length ? `<h3 style="margin-top: 20px;">Comments</h3>${note.comments.map(c => `<p style="font-size: 14px;"><strong>${c.user}</strong> (${formatDate(c.timestamp)}): ${c.text}</p>`).join('')}` : ''}
+                ${note.versionHistory?.length > 1 ? `<h3 style="margin-top: 20px;">Version History</h3>${note.versionHistory.map((v, i) => `<p style="font-size: 12px;">${formatDate(v.timestamp)}: ${v.content.substring(0, 50)}...</p>`).join('')}` : ''}
+                ${note.reminders?.length ? `<h3 style="margin-top: 20px;">Reminders</h3>${note.reminders.map(r => `<p style="font-size: 12px;">${formatDate(new Date(r))}</p>`).join('')}` : ''}
                 <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px;">
                     <button onclick="editNote('${note.id}', document.getElementById('noteDetailEdit').value)" ${note.locked ? 'disabled' : ''}>Save</button>
                     <button class="secondary" onclick="addComment('${note.id}')">Comment</button>
@@ -1524,7 +1770,7 @@
                     <button class="secondary" onclick="deleteNote('${note.id}')">Delete</button>
                 </div>
             `;
-            document.getElementById('noteDetailModal').style.display = 'flex';
+            showModal('noteDetailModal');
         }
 
         function navigateNote(direction) {
@@ -1539,7 +1785,7 @@
 
         function showDayDetail(day) {
             currentDay = day;
-            const date = new Date(2025, currentMonth, day);
+            const date = new Date(currentYear, currentMonth, day);
             const dayTodos = todos.filter(t => t.dueDate && new Date(t.dueDate).toDateString() === date.toDateString());
             const detailContent = document.getElementById('dayDetailContent');
             detailContent.innerHTML = `
@@ -1570,11 +1816,11 @@
                 `).join('') : '<p style="font-size: 16px; color: var(--muted);">No tasks scheduled.</p>'}
                 <button class="small" onclick="showCreateTodoModalForDay(${day})">+ Add Task</button>
             `;
-            document.getElementById('dayDetailModal').style.display = 'flex';
+            showModal('dayDetailModal');
         }
 
         function navigateDay(direction) {
-            const daysInMonth = new Date(2025, currentMonth + 1, 0).getDate();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             if (direction === 'prev' && currentDay > 1) {
                 currentDay--;
                 showDayDetail(currentDay);
@@ -1586,31 +1832,18 @@
 
         function showCreateTodoModalForDay(day) {
             showCreateTodoModal();
-            const date = new Date(2025, currentMonth, day);
+            const date = new Date(currentYear, currentMonth, day);
             document.getElementById('newTodoDueDate').value = date.toISOString().slice(0, 16);
         }
 
-        // Utility functions
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-        }
-
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
-            document.getElementById(`${pageId}Page`).style.display = 'block';
-            document.getElementById('pageTitle').textContent = pageId.charAt(0).toUpperCase() + pageId.slice(1);
-            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-            document.getElementById(`${pageId}Nav`).classList.add('active');
-            selectedItems.clear();
-        }
-
+        // Additional Utility Functions
         function showStats() {
             const modal = document.getElementById('statsModal');
             const statsContent = document.getElementById('statsContent');
             const completedTodos = todos.filter(t => t.completed).length;
             const totalTodos = todos.length;
-            const averageEffort = todos.length ? (todos.reduce((sum, t) => sum + (t.effort || 1), 0) / todos.length).toFixed(1) : 0;
+            const completionRate = totalTodos ? Math.round((completedTodos / totalTodos) * 100) : 0;
+            const averageEffort = totalTodos ? (todos.reduce((sum, t) => sum + (t.effort || 1), 0) / totalTodos).toFixed(1) : 0;
             const tagUsage = todos.reduce((acc, t) => {
                 t.tags.forEach(tag => acc[tag] = (acc[tag] || 0) + 1);
                 return acc;
@@ -1620,29 +1853,24 @@
 
             statsContent.innerHTML = `
                 <p><strong>Total Notes:</strong> ${notes.length} <span class="badge">${notes.filter(n => n.pinned).length} Pinned</span> <span class="badge">${notes.filter(n => n.favorited).length} Favorited</span></p>
-                <p><strong>Total Tasks:</strong> ${totalTodos} <span class="badge">${completedTodos} Completed (${totalTodos ? Math.round((completedTodos/totalTodos)*100) : 0}%)</span></p>
+                <p><strong>Total Tasks:</strong> ${totalTodos} <span class="badge">${completedTodos} Completed (${completionRate}%)</span></p>
                 <p><strong>Overdue Tasks:</strong> ${overdueTasks}</p>
                 <p><strong>Average Task Effort:</strong> ${averageEffort}/10</p>
                 <p><strong>Total Time Spent:</strong> ${timeSpent} minutes</p>
-                <p><strong>Top Tags:</strong> ${Object.entries(tagUsage).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag, count]) => `${tag} (${count})`).join(', ')}</p>
+                <p><strong>Top Tags:</strong> ${Object.entries(tagUsage).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag, count]) => `${tag} (${count})`).join(', ') || 'None'}</p>
                 <p><strong>Locked Notes:</strong> ${notes.filter(n => n.locked).length}</p>
                 <p><strong>Collaborative Items:</strong> ${notes.filter(n => n.collaborators?.length).length + todos.filter(t => t.assignees?.length).length}</p>
-                <div class="progress-bar" style="margin-top: 16px;"><div class="progress-bar-fill" style="width: ${(completedTodos/totalTodos)*100}%"></div></div>
+                <div class="progress-bar" style="margin-top: 16px;"><div class="progress-bar-fill" style="width: ${completionRate}%"></div></div>
             `;
-            modal.style.display = 'flex';
+            showModal('statsModal');
         }
 
         function showSettings() {
-            document.getElementById('settingsModal').style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-            selectedItems.clear();
+            showModal('settingsModal');
         }
 
         function toggleFilterPanel() {
-            document.getElementById('filterModal').style.display = 'flex';
+            showModal('filterModal');
         }
 
         function applyFilters() {
@@ -1650,9 +1878,18 @@
             const tags = document.getElementById('filterTags').value.split(',').map(t => t.trim()).filter(t => t);
             const priority = document.getElementById('filterPriority').value;
             const status = document.getElementById('filterStatus').value;
-            const filterQuery = tags.join(' ');
-            renderNotes(filterQuery);
-            renderTodos(); // Add logic for priority and status filtering if needed
+            const filterQuery = tags.join(' ').toLowerCase();
+
+            if (currentPage === 'notes') {
+                renderNotes(filterQuery);
+            } else if (currentPage === 'todos') {
+                const filteredTodos = todos.filter(t => !t.archived && !t.trashed &&
+                    (!category || t.category === category) &&
+                    (!tags.length || t.tags.some(tag => filterQuery.includes(tag.toLowerCase()))) &&
+                    (!priority || t.priority === priority) &&
+                    (!status || (status === 'completed' ? t.completed : !t.completed)));
+                renderTodos(filteredTodos);
+            }
             closeModal('filterModal');
         }
 
@@ -1661,23 +1898,30 @@
             document.body.classList.toggle('dark-theme', theme === 'dark');
         }
 
-        function exportData() {
-            const data = {
-                notes,
-                todos,
-                archived,
-                trashed,
-                settings
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {
-                type: 'application/json'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `nota-export-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+        async function exportData() {
+            showLoading();
+            try {
+                const data = {
+                    notes,
+                    todos,
+                    settings
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `nota-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Failed to export data: ' + error.message);
+            } finally {
+                hideLoading();
+            }
         }
 
         function showNoteContextMenu(event, id) {
@@ -1686,7 +1930,6 @@
             menu.style.left = `${event.pageX}px`;
             menu.style.top = `${event.pageY}px`;
             menu.style.display = 'block';
-
             menu.innerHTML = `
                 <div onclick="togglePinNote('${id}')">Pin/Unpin</div>
                 <div onclick="toggleFavoriteNote('${id}')">Favorite/Unfavorite</div>
@@ -1696,13 +1939,9 @@
                 <div onclick="setNotePriority('${id}')">Set Priority</div>
                 <div onclick="addReminderToNote('${id}')">Add Reminder</div>
                 <div onclick="addComment('${id}')">Add Comment</div>
-                <div onclick="addCollaboratorToNote('${id}')">Add Collaborator</div>
                 <div onclick="archiveNote('${id}')">Archive</div>
                 <div onclick="deleteNote('${id}')">Delete</div>
-                <div onclick="duplicateNote('${id}')">Duplicate</div>
-                <div onclick="exportNote('${id}')">Export as PDF</div>
             `;
-
             document.addEventListener('click', () => menu.style.display = 'none', {
                 once: true
             });
@@ -1714,7 +1953,6 @@
             menu.style.left = `${event.pageX}px`;
             menu.style.top = `${event.pageY}px`;
             menu.style.display = 'block';
-
             menu.innerHTML = `
                 <div onclick="toggleTodo('${id}')">Complete/Uncomplete</div>
                 <div onclick="addSubtask('${id}')">Add Subtask</div>
@@ -1722,71 +1960,70 @@
                 <div onclick="setTimeEstimate('${id}')">Set Time Estimate</div>
                 <div onclick="logTime('${id}')">Log Time</div>
                 <div onclick="addReminderToTodo('${id}')">Add Reminder</div>
-                <div onclick="setTaskStatus('${id}')">Set Status</div>
                 <div onclick="archiveTodo('${id}')">Archive</div>
                 <div onclick="deleteTodo('${id}')">Delete</div>
-                <div onclick="duplicateTodo('${id}')">Duplicate</div>
-                <div onclick="exportTask('${id}')">Export as PDF</div>
             `;
-
             document.addEventListener('click', () => menu.style.display = 'none', {
                 once: true
             });
         }
 
-        function duplicateNote(id) {
-            const note = notes.find(n => n.id === id);
-            db.collection(currentUser.uid).doc('notes').collection('items').add({
-                ...note,
-                title: `${note.title} (Copy)`,
-                created: firebase.firestore.FieldValue.serverTimestamp(),
-                updated: firebase.firestore.FieldValue.serverTimestamp(),
-                pinned: false,
-                favorited: false
-            }).catch(error => console.error('Error duplicating note:', error));
+        async function restoreItem(id, collection) {
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).update({
+                    archived: false,
+                    trashed: false,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to restore item: ' + error.message);
+            } finally {
+                hideLoading();
+            }
         }
 
-        function duplicateTodo(id) {
-            const todo = todos.find(t => t.id === id);
-            db.collection(currentUser.uid).doc('todos').collection('items').add({
-                ...todo,
-                title: `${todo.title} (Copy)`,
-                created: firebase.firestore.FieldValue.serverTimestamp(),
-                updated: firebase.firestore.FieldValue.serverTimestamp(),
-                completed: false,
-                progress: 0
-            }).catch(error => console.error('Error duplicating todo:', error));
+        async function deleteItem(id, collection) {
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).update({
+                    trashed: true,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert('Failed to delete item: ' + error.message);
+            } finally {
+                hideLoading();
+            }
         }
 
-        function restoreItem(id, collection) {
-            db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
-                archived: false,
-                trashed: false,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error restoring item:', error));
-        }
-
-        function deleteItem(id, collection) {
-            db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
-                trashed: true,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error deleting item:', error));
-        }
-
-        function permanentlyDeleteItem(id, collection) {
-            db.collection(currentUser.uid).doc(collection).collection('items').doc(id).delete()
-                .catch(error => console.error('Error permanently deleting item:', error));
+        async function permanentlyDeleteItem(id, collection) {
+            if (!confirm('Are you sure you want to delete this item permanently?')) return;
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).delete();
+            } catch (error) {
+                alert('Failed to permanently delete item: ' + error.message);
+            } finally {
+                hideLoading();
+            }
         }
 
         function previousMonth() {
             currentMonth--;
-            if (currentMonth < 0) currentMonth = 11;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
             renderCalendar();
         }
 
         function nextMonth() {
             currentMonth++;
-            if (currentMonth > 11) currentMonth = 0;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
             renderCalendar();
         }
 
@@ -1798,83 +2035,24 @@
             return content
                 .replace(/#\w+/g, '<span style="color: var(--primary);">$&</span>')
                 .replace(/@\w+/g, '<span style="color: var(--accent);">$&</span>')
-                .replace(/\/(\w+)/g, '<span style="color: #805ad5;">$&</span>'); // Commands
-        }
-
-        // New Features
-        function addCollaboratorToNote(id) {
-            const email = prompt('Add collaborator email:');
-            if (email && validateEmail(email)) {
-                const note = notes.find(n => n.id === id);
-                const collaborators = [...(note.collaborators || []), email];
-                db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                    collaborators,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error adding collaborator:', error));
-            }
-        }
-
-        function exportNote(id) {
-            const note = notes.find(n => n.id === id);
-            const content = `${note.title}\n\n${note.content}\n\nTags: ${note.tags.join(', ')}\nCreated: ${formatDate(note.created)}\nUpdated: ${formatDate(note.updated)}`;
-            const blob = new Blob([content], {
-                type: 'text/plain'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${note.title}.txt`; // Could be enhanced to PDF with a library
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function exportTask(id) {
-            const todo = todos.find(t => t.id === id);
-            const content = `${todo.title}\n\nPriority: ${todo.priority}\nDue: ${todo.dueDate ? formatDate(new Date(todo.dueDate)) : 'N/A'}\nTags: ${todo.tags.join(', ')}\nEffort: ${todo.effort}/10\nProgress: ${todo.progress}%\nSubtasks:\n${todo.subtasks?.map(s => `- ${s.title} [${s.completed ? 'x' : ' '}]`).join('\n') || 'None'}`;
-            const blob = new Blob([content], {
-                type: 'text/plain'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${todo.title}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function setTaskStatus(id) {
-            const status = prompt('Set status (pending, in-progress, completed, blocked):');
-            const validStatuses = ['pending', 'in-progress', 'completed', 'blocked'];
-            if (validStatuses.includes(status)) {
-                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                    status,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error setting status:', error));
-            } else {
-                alert('Invalid status. Use: pending, in-progress, completed, blocked');
-            }
+                .replace(/\/(\w+)/g, '<span style="color: #805ad5;">$&</span>');
         }
 
         function toggleSelection(event, type, id) {
             if (event.ctrlKey || event.metaKey) {
                 event.stopPropagation();
-                if (selectedItems.has(id)) {
-                    selectedItems.delete(id);
-                } else {
-                    selectedItems.add(id);
-                }
+                if (selectedItems.has(id)) selectedItems.delete(id);
+                else selectedItems.add(id);
                 highlightSelectedItems();
             }
         }
 
         function highlightSelectedItems() {
             document.querySelectorAll('.card, .task-card').forEach(card => {
-                const id = card.getAttribute('onclick')?.match(/'(.*?)'/g)?.[1];
-                if (id && selectedItems.has(id)) {
-                    card.style.border = '2px solid var(--primary)';
-                } else {
-                    card.style.border = 'none';
-                }
+                const idMatch = card.getAttribute('onclick')?.match(/'(.*?)'/g);
+                const id = idMatch ? idMatch[1] : null;
+                if (id && selectedItems.has(id)) card.style.border = '2px solid var(--primary)';
+                else card.style.border = 'none';
             });
         }
 
@@ -1887,39 +2065,61 @@
                     <span>${item.title}</span>
                 </div>
             `).join('');
-            document.getElementById('bulkActionsModal').style.display = 'flex';
+            showModal('bulkActionsModal');
         }
 
-        function executeBulkAction() {
+        async function executeBulkAction() {
             const action = document.getElementById('bulkActionType').value;
-            const collection = document.getElementById('pageTitle').textContent.toLowerCase() === 'notes' ? 'notes' : 'todos';
-            selectedItems.forEach(id => {
-                switch (action) {
-                    case 'archive':
-                        collection === 'notes' ? archiveNote(id) : archiveTodo(id);
-                        break;
-                    case 'trash':
-                        collection === 'notes' ? deleteNote(id) : deleteTodo(id);
-                        break;
-                    case 'favorite':
-                        toggleFavoriteNote(id);
-                        break;
-                    case 'pin':
-                        togglePinNote(id);
-                        break;
-                }
-            });
-            closeModal('bulkActionsModal');
+            const collection = currentPage === 'notes' ? 'notes' : 'todos';
+            showLoading();
+            try {
+                const batch = db.batch();
+                selectedItems.forEach(id => {
+                    const ref = db.collection('users').doc(currentUser.uid).collection(collection).doc(id);
+                    switch (action) {
+                        case 'archive':
+                            batch.update(ref, {
+                                archived: true,
+                                updated: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            break;
+                        case 'trash':
+                            batch.update(ref, {
+                                trashed: true,
+                                updated: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            break;
+                        case 'favorite':
+                            if (collection === 'notes') batch.update(ref, {
+                                favorited: true,
+                                updated: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            break;
+                        case 'pin':
+                            if (collection === 'notes') batch.update(ref, {
+                                pinned: true,
+                                updated: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            break;
+                    }
+                });
+                await batch.commit();
+                closeModal('bulkActionsModal');
+            } catch (error) {
+                alert('Failed to execute bulk action: ' + error.message);
+            } finally {
+                hideLoading();
+            }
         }
 
         function notify(message) {
-            if ('Notification' in window && Notification.permission === 'granted') {
+            if ('Notification' in window && Notification.permission === 'granted' && settings.notifications) {
                 new Notification('Nota', {
                     body: message
                 });
             } else if ('Notification' in window && Notification.permission !== 'denied') {
                 Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') new Notification('Nota', {
+                    if (permission === 'granted' && settings.notifications) new Notification('Nota', {
                         body: message
                     });
                 });
@@ -1956,163 +2156,18 @@
             } [priority] || '#e2e8f0';
         }
 
-        function validateEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        }
-
-        // Search and filter
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            renderNotes(e.target.value.toLowerCase());
-        });
-
-        // Auto-save drafts
-        let draftTimeout;
-
-        function autoSaveDraft(elementId, storageKey) {
-            const element = document.getElementById(elementId);
-            element.addEventListener('input', () => {
-                clearTimeout(draftTimeout);
-                draftTimeout = setTimeout(() => {
-                    const content = element.value;
-                    localStorage.setItem(`${storageKey}_${currentUser.uid}`, content);
-                }, settings.autoSaveInterval * 1000);
-            });
-        }
-
-        autoSaveDraft('newNoteContent', 'draft_note');
-        autoSaveDraft('newTodoTitle', 'draft_todo');
-
-        // Load drafts
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                const noteDraft = localStorage.getItem(`draft_note_${user.uid}`);
-                if (noteDraft) document.getElementById('newNoteContent').value = noteDraft;
-                const todoDraft = localStorage.getItem(`draft_todo_${user.uid}`);
-                if (todoDraft) document.getElementById('newTodoTitle').value = todoDraft;
-            }
-        });
-
-        // Additional Features
-        function addAttachment(id, collection) {
-            const attachment = prompt('Enter attachment URL:');
-            if (attachment) {
-                const item = (collection === 'notes' ? notes : todos).find(i => i.id === id);
-                const attachments = [...(item.attachments || []), {
-                    url: attachment,
-                    added: new Date().toISOString()
-                }];
-                db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
-                    attachments,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error adding attachment:', error));
+        function searchItems() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (currentPage === 'notes') {
+                renderNotes(query);
+            } else if (currentPage === 'todos') {
+                const filteredTodos = todos.filter(t => !t.archived && !t.trashed &&
+                    (t.title.toLowerCase().includes(query) || t.tags.some(tag => tag.toLowerCase().includes(query))));
+                renderTodos(filteredTodos);
             }
         }
 
-        function setCustomRecurrence(id) {
-            const pattern = prompt('Enter custom recurrence pattern (e.g., every 2 days):');
-            if (pattern) {
-                db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                    recurrence: pattern,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(error => console.error('Error setting recurrence:', error));
-            }
-        }
-
-        function linkNoteToTask(noteId, taskId) {
-            const note = notes.find(n => n.id === noteId);
-            const links = [...(note.links || []), `task:${taskId}`];
-            db.collection(currentUser.uid).doc('notes').collection('items').doc(id).update({
-                links,
-                updated: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => console.error('Error linking note to task:', error));
-        }
-
-        function generateSummary(id, collection) {
-            const item = (collection === 'notes' ? notes : todos).find(i => i.id === id);
-            const summary = item.content ? item.content.substring(0, 100) + '...' : item.title;
-            alert(`Summary: ${summary}`);
-        }
-
-        function setDeadline(id) {
-            const date = prompt('Set deadline (YYYY-MM-DD HH:MM):');
-            if (date) {
-                const deadline = new Date(date);
-                if (!isNaN(deadline.getTime())) {
-                    db.collection(currentUser.uid).doc('todos').collection('items').doc(id).update({
-                        dueDate: deadline.toISOString(),
-                        updated: firebase.firestore.FieldValue.serverTimestamp()
-                    }).catch(error => console.error('Error setting deadline:', error));
-                }
-            }
-        }
-
-        function createTaskFromNote(id) {
-            const note = notes.find(n => n.id === id);
-            db.collection(currentUser.uid).doc('todos').collection('items').add({
-                title: note.title,
-                priority: 'medium',
-                dueDate: null,
-                tags: note.tags,
-                effort: 1,
-                completed: false,
-                created: firebase.firestore.FieldValue.serverTimestamp(),
-                updated: firebase.firestore.FieldValue.serverTimestamp(),
-                archived: false,
-                trashed: false,
-                subtasks: [],
-                dependencies: [],
-                recurrence: '',
-                progress: 0,
-                assignees: [],
-                reminders: [],
-                timeEstimate: 0,
-                actualTime: 0,
-                status: 'pending',
-                linkedNote: id
-            }).catch(error => console.error('Error creating task from note:', error));
-        }
-
-        function setCustomCategory() {
-            const category = prompt('Enter custom category:');
-            if (category) {
-                document.getElementById('newNoteCategory').innerHTML += `<option value="${category}">${category}</option>`;
-            }
-        }
-
-        function toggleDarkModeGlobally() {
-            settings.theme = settings.theme === 'light' ? 'dark' : 'light';
-            saveSettings();
-        }
-
-        function bulkTagItems() {
-            const tag = prompt('Enter tag to apply to selected items:');
-            if (tag) {
-                selectedItems.forEach(id => {
-                    const item = notes.find(n => n.id === id) || todos.find(t => t.id === id);
-                    const collection = item.content ? 'notes' : 'todos';
-                    const tags = [...(item.tags || []), tag];
-                    db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
-                        tags,
-                        updated: firebase.firestore.FieldValue.serverTimestamp()
-                    }).catch(error => console.error('Error tagging item:', error));
-                });
-            }
-        }
-
-        function scheduleReview(id, collection) {
-            const date = prompt('Schedule review (YYYY-MM-DD):');
-            if (date) {
-                const reviewDate = new Date(date);
-                if (!isNaN(reviewDate.getTime())) {
-                    db.collection(currentUser.uid).doc(collection).collection('items').doc(id).update({
-                        reviewDate: reviewDate.toISOString(),
-                        updated: firebase.firestore.FieldValue.serverTimestamp()
-                    }).catch(error => console.error('Error scheduling review:', error));
-                }
-            }
-        }
-
-        // Initial setup
+        // Initial Setup
         showPage('notes');
         if ('Notification' in window) Notification.requestPermission();
     </script>
