@@ -979,15 +979,15 @@
             </section>
 
             <section id="favoritesPage" class="page" style="display: none;">
-                <div id="favoritesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;"></div>
+                <div id="favoritesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 24px;"></div>
             </section>
 
             <section id="archivePage" class="page" style="display: none;">
-                <div id="archiveList" style="display: flex; flex-direction: column; gap: 20px;"></div>
+                <div id="archiveList" style="display: flex; flex-direction: column; gap: 20px; margin: 24px;"></div>
             </section>
 
             <section id="trashPage" class="page" style="display: none;">
-                <div id="trashList" style="display: flex; flex-direction: column; gap: 20px;"></div>
+                <div id="trashList" style="display: flex; flex-direction: column; gap: 20px; margin: 24px;"></div>
             </section>
 
             <div class="loading-overlay" id="loadingOverlay" style="display: none;">
@@ -1585,70 +1585,77 @@
             };
             let hasUnsavedChanges = false;
 
+            // Keep the exact same UI, including rich text editor buttons
             modal.innerHTML = `
-            <div class="modal-content">
-                <h2>Create New Note</h2>
-                <input type="text" id="newNoteTitle" placeholder="Title" required oninput="checkForChanges()">
-                <div class="note-editor-container">
-                    <div class="note-editor-toolbar">
-                        <button onclick="formatText('bold')" title="Bold">
+        <div class="modal-content">
+            <h2>Create New Note</h2>
+            <input type="text" id="newNoteTitle" placeholder="Title" required oninput="checkForChanges()">
+            <div class="note-editor-container">
+                <div class="note-editor-toolbar">
+                    <button onclick="formatText('bold')" title="Bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0114.764 22H6v-5a1 1 0 011-1h7m-7-8h6a2 2 0 012 2v5a1 1 0 01-1 1H6V2h6a2 2 0 012 2v5z" />
+                        </svg>
+                    </button>
+                    <button onclick="formatText('italic')" title="Italic">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4h6l-4 16H5l4-16z" />
+                        </svg>
+                    </button>
+                    <button onclick="formatText('underline')" title="Underline">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17H7m5-11v8m5 4H7" />
+                        </svg>
+                    </button>
+                    <div class="font-size-group">
+                        <button onclick="adjustFontSize(-2)" title="Decrease Font Size">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0114.764 22H6v-5a1 1 0 011-1h7m-7-8h6a2 2 0 012 2v5a1 1 0 01-1 1H6V2h6a2 2 0 012 2v5z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                             </svg>
                         </button>
-                        <button onclick="formatText('italic')" title="Italic">
+                        <input type="number" id="fontSizeInput" value="16" min="8" max="72" onchange="setFontSize(this.value)">
+                        <button onclick="adjustFontSize(2)" title="Increase Font Size">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4h6l-4 16H5l4-16z" />
-                            </svg>
-                        </button>
-                        <button onclick="formatText('underline')" title="Underline">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17H7m5-11v8m5 4H7" />
-                            </svg>
-                        </button>
-                        <div class="font-size-group">
-                            <button onclick="adjustFontSize(-2)" title="Decrease Font Size">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                                </svg>
-                            </button>
-                            <input type="number" id="fontSizeInput" value="16" min="8" max="72" onchange="setFontSize(this.value)">
-                            <button onclick="adjustFontSize(2)" title="Increase Font Size">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                            </button>
-                        </div>
-                        <button onclick="formatText('insertOrderedList')" title="Ordered List">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h2m0 0v2H3m0-2v2m2-2H3m6 0h12M3 12h2m0 0v2H3m0-2v2m2-2H3m6 0h12m-18 8h2m0 0v2H3m0-2v2m2-2H3m6 0h12" />
-                            </svg>
-                        </button>
-                        <button onclick="formatText('insertUnorderedList')" title="Unordered List">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h12M9 12h12m-12 7h12M5 5h.01M5 12h.01M5 19h.01" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                         </button>
                     </div>
-                    <div class="note-editor" id="newNoteEditor" contenteditable="true" oninput="checkForChanges()"></div>
+                    <button onclick="formatText('insertOrderedList')" title="Ordered List">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h2m0 0v2H3m0-2v2m2-2H3m6 0h12M3 12h2m0 0v2H3m0-2v2m2-2H3m6 0h12m-18 8h2m0 0v2H3m0-2v2m2-2H3m6 0h12" />
+                        </svg>
+                    </button>
+                    <button onclick="formatText('insertUnorderedList')" title="Unordered List">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h12M9 12h12m-12 7h12M5 5h.01M5 12h.01M5 19h.01" />
+                        </svg>
+                    </button>
                 </div>
-                <div style="display: flex; gap: 16px; margin-top: 16px;">
-                    <select id="newNoteCategory" onchange="checkForChanges()">
-                        <option value="personal">Personal</option>
-                        <option value="work">Work</option>
-                        <option value="ideas">Ideas</option>
-                        <option value="custom">Custom</option>
-                    </select>
-                    <input type="text" id="newNoteTags" placeholder="Tags (e.g., #urgent, #project)" onblur="checkForChanges()">
-                    <input type="color" id="newNoteColor" value="#ffffff" title="Background Color" onchange="checkForChanges()">
-                </div>
-                <input type="text" id="newNoteLinks" placeholder="Links (comma-separated)" onblur="checkForChanges()">
-                <div style="display: flex; gap: 16px; margin-top: 20px;">
-                    <button id="createNoteBtn" onclick="addNote()">Create</button>
-                    <button class="secondary" onclick="confirmCloseModal('createNoteModal')">Cancel</button>
-                </div>
+                <div class="note-editor" id="newNoteEditor" contenteditable="true" oninput="checkForChanges()"></div>
             </div>
-        `;
+            <div style="display: flex; gap: 16px; margin-top: 16px;">
+                <select id="newNoteCategory" onchange="checkForChanges()">
+                    <option value="personal">Personal</option>
+                    <option value="work">Work</option>
+                    <option value="ideas">Ideas</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <input type="text" id="newNoteTags" placeholder="Tags (e.g., #urgent, #project)" onblur="checkForChanges()">
+                <input type="color" id="newNoteColor" value="#ffffff" title="Background Color" onchange="checkForChanges()">
+            </div>
+            <input type="text" id="newNoteLinks" placeholder="Links (comma-separated)" onblur="checkForChanges()">
+            <div style="display: flex; gap: 16px; margin-top: 20px;">
+                <button id="createNoteBtn">Create</button>
+                <button class="secondary" id="cancelCreateNoteBtn">Cancel</button>
+            </div>
+        </div>
+    `;
+
+            // Attach event listeners to buttons
+            const createBtn = document.getElementById('createNoteBtn');
+            const cancelBtn = document.getElementById('cancelCreateNoteBtn');
+            createBtn.addEventListener('click', addNote);
+            cancelBtn.addEventListener('click', () => confirmCloseModal('createNoteModal'));
 
             modal.addEventListener('click', handleOverlayClick);
             showModal('createNoteModal');
@@ -1683,9 +1690,8 @@
                 const tags = document.getElementById('newNoteTags');
                 const color = document.getElementById('newNoteColor');
                 const links = document.getElementById('newNoteLinks');
-                const createBtn = document.getElementById('createNoteBtn');
 
-                if (!title || !editor || !category || !tags || !color || !links || !createBtn) {
+                if (!title || !editor || !category || !tags || !color || !links) {
                     console.error('Missing elements for note creation');
                     return;
                 }
