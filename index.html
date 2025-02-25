@@ -7,21 +7,22 @@
     <title>Nota - Ultimate Productivity Suite</title>
     <style>
         :root {
-            --primary: #0066ff;
-            --secondary: #f7f9fb;
-            --text: #1a202c;
-            --muted: #718096;
+            --primary: #0055d4;
+            --secondary: #f8fafc;
+            --text: #2d3748;
+            --muted: #7a869a;
             --border: #e2e8f0;
-            --shadow: rgba(0, 0, 0, 0.05);
+            --shadow: rgba(0, 0, 0, 0.06);
             --hover: #edf2f7;
-            --dark-bg: #1a202c;
-            --dark-card: #2d3748;
-            --dark-text: #e2e8f0;
-            --accent: #ff4444;
-            --success: #38a169;
-            --warning: #ffbb33;
+            --dark-bg: #1f252d;
+            --dark-card: #28303b;
+            --dark-text: #d7dce4;
+            --accent: #ff4d4d;
+            --success: #2f855a;
+            --warning: #f6ad55;
             --error: #e53e3e;
             --spinner: #a0aec0;
+            --completed: #a0aec0;
         }
 
         * {
@@ -35,7 +36,7 @@
             background: var(--secondary);
             color: var(--text);
             line-height: 1.6;
-            font-size: 14px;
+            font-size: 15px;
             overflow: hidden;
         }
 
@@ -45,32 +46,59 @@
             width: 100vw;
         }
 
+        /* Sidebar */
         .sidebar {
-            width: 280px;
-            background: #ffffff;
-            padding: 20px;
+            width: 260px;
+            background: #fff;
+            padding: 16px;
             border-right: 1px solid var(--border);
             overflow-y: auto;
-            transition: width 0.3s ease;
+            transition: width 0.3s ease, background 0.2s ease;
         }
 
         .sidebar.collapsed {
-            width: 64px;
-            padding: 10px;
+            width: 72px;
+            padding: 8px;
         }
 
         .sidebar.collapsed .sidebar-item span {
             display: none;
         }
 
+        .sidebar-header {
+            margin-bottom: 16px;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .sidebar-toggle svg {
+            width: 20px;
+            height: 20px;
+            color: var(--muted);
+        }
+
+        #sidebarSearch {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+            border: 1px solid var(--border);
+        }
+
         .sidebar-item {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            margin: 6px 0;
-            border-radius: 8px;
+            padding: 10px 12px;
+            margin: 4px 0;
+            border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s ease, color 0.2s ease;
+            font-weight: 500;
         }
 
         .sidebar-item:hover {
@@ -78,103 +106,155 @@
         }
 
         .sidebar-item svg {
-            width: 24px;
-            height: 24px;
-            min-width: 24px;
-            min-height: 24px;
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
             margin-right: 12px;
             color: var(--muted);
-            transition: color 0.2s ease;
         }
 
         .sidebar-item.active {
-            background: rgba(0, 102, 255, 0.1);
+            background: rgba(0, 85, 212, 0.12);
             color: var(--primary);
+            font-weight: 600;
         }
 
         .sidebar-item.active svg {
             color: var(--primary);
         }
 
+        /* Main Content */
         .main-content {
             flex: 1;
-            padding: 32px;
+            padding: 24px;
             overflow-y: auto;
             background: var(--secondary);
             position: relative;
+            transition: background 0.2s ease;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 24px;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px var(--shadow);
-            margin-bottom: 32px;
+            padding: 12px 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px var(--shadow);
+            margin-bottom: 24px;
         }
 
         .header h1 {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 600;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Cards */
         .card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 6px var(--shadow);
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px var(--shadow);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            position: relative;
             cursor: pointer;
+            position: relative;
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--shadow);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px var(--shadow);
         }
 
+        .card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .note-preview {
+            font-size: 14px;
+            color: var(--muted);
+            max-height: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        /* Task Cards */
         .task-card {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            padding: 16px;
-            min-height: 120px;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px var(--shadow);
+            gap: 10px;
+            padding: 14px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px var(--shadow);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: grab;
         }
 
         .task-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--shadow);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px var(--shadow);
         }
 
         .task-header {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+        }
+
+        .task-header input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .task-header span {
+            font-size: 15px;
+            font-weight: 500;
         }
 
         .task-details {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 8px;
             font-size: 12px;
             color: var(--muted);
         }
 
+        /* Priority */
+        .priority-high {
+            border-left: 4px solid var(--accent);
+        }
+
+        .priority-medium {
+            border-left: 4px solid var(--warning);
+        }
+
+        .priority-low {
+            border-left: 4px solid var(--success);
+        }
+
+        /* Input Group */
         .input-group {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 32px;
-            box-shadow: 0 2px 4px var(--shadow);
+            background: #fff;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px var(--shadow);
             display: flex;
-            gap: 16px;
+            gap: 12px;
             align-items: center;
         }
 
@@ -182,90 +262,100 @@
         textarea,
         select {
             width: 100%;
-            padding: 12px;
-            border: none;
-            background: var(--hover);
-            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 6px;
             font-size: 14px;
-            margin-bottom: 16px;
-            transition: background 0.2s ease;
+            margin-bottom: 12px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         input:focus,
         textarea:focus,
         select:focus {
-            background: #e2e8f0;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 85, 212, 0.2);
             outline: none;
         }
 
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 120px;
         }
 
+        /* Buttons */
         button {
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: var(--primary);
-            color: white;
+            color: #fff;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s ease;
+            transition: background 0.2s ease, transform 0.1s ease;
         }
 
         button:hover {
-            background: #0052cc;
+            background: #0044b3;
+            transform: translateY(-1px);
         }
 
         button.secondary {
-            background: var(--hover);
+            background: #fff;
             color: var(--text);
+            border: 1px solid var(--border);
         }
 
         button.secondary:hover {
-            background: #e2e8f0;
+            background: var(--hover);
         }
 
         button.small {
-            padding: 8px 16px;
+            padding: 6px 12px;
             font-size: 12px;
         }
 
         button:disabled {
             background: var(--muted);
+            color: #fff;
             cursor: not-allowed;
+            transform: none;
         }
 
+        /* Calendar */
         .calendar-view {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 12px;
-            padding: 20px;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px var(--shadow);
+            gap: 10px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px var(--shadow);
         }
 
         .calendar-day {
-            padding: 16px;
+            padding: 12px;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            min-height: 140px;
+            border-radius: 6px;
+            min-height: 120px;
             cursor: pointer;
-            transition: background 0.2s ease;
+            transition: background 0.2s ease, border-color 0.2s ease;
+            font-size: 13px;
         }
 
         .calendar-day:hover {
             background: var(--hover);
+            border-color: var(--primary);
         }
 
         .calendar-day.today {
             border-color: var(--primary);
-            background: rgba(0, 102, 255, 0.05);
+            background: rgba(0, 85, 212, 0.05);
         }
 
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -273,7 +363,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -284,61 +374,59 @@
         }
 
         .modal-content {
-            background: #ffffff;
-            padding: 32px;
+            background: #fff;
+            padding: 24px;
             width: 90%;
-            max-width: 700px;
-            border-radius: 16px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            max-width: 720px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow-y: auto;
+            max-height: 90vh;
         }
 
         .modal-nav {
             position: absolute;
-            top: 32px;
-            left: 32px;
+            top: 24px;
+            left: 24px;
             display: flex;
-            gap: 16px;
+            gap: 12px;
         }
 
-        .priority-high {
-            border-left: 6px solid #ff4444;
-        }
-
-        .priority-medium {
-            border-left: 6px solid #ffbb33;
-        }
-
-        .priority-low {
-            border-left: 6px solid #38a169;
-        }
-
+        /* Tags */
         .tag {
             display: inline-flex;
             align-items: center;
-            padding: 4px 10px;
+            padding: 3px 8px;
             background: var(--hover);
-            border-radius: 16px;
-            margin: 4px 6px 0 0;
+            border-radius: 12px;
+            margin: 0 6px 6px 0;
             font-size: 12px;
+            font-weight: 500;
             color: var(--muted);
+            transition: background 0.2s ease;
         }
 
+        .tag:hover {
+            background: #dfe6ed;
+        }
+
+        /* Context Menu */
         .context-menu {
             position: absolute;
-            background: #ffffff;
+            background: #fff;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 2px 8px var(--shadow);
+            border-radius: 6px;
+            padding: 8px 0;
+            box-shadow: 0 2px 10px var(--shadow);
             z-index: 1000;
-            min-width: 180px;
+            min-width: 200px;
         }
 
         .context-menu div {
-            padding: 8px 12px;
+            padding: 8px 16px;
             cursor: pointer;
+            font-size: 14px;
             transition: background 0.2s ease;
         }
 
@@ -346,22 +434,25 @@
             background: var(--hover);
         }
 
+        /* Badge */
         .badge {
             display: inline-flex;
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
             font-size: 12px;
-            margin-left: 10px;
+            margin-left: 8px;
             background: var(--hover);
             color: var(--muted);
+            font-weight: 500;
         }
 
+        /* Progress Bar */
         .progress-bar {
-            height: 8px;
+            height: 6px;
             background: var(--border);
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
-            margin-top: 12px;
+            margin-top: 10px;
         }
 
         .progress-bar-fill {
@@ -370,10 +461,11 @@
             transition: width 0.3s ease;
         }
 
+        /* Dark Theme */
         .dark-theme {
             --secondary: var(--dark-bg);
             --text: var(--dark-text);
-            --hover: #4a5568;
+            --hover: #374151;
             --border: #4a5568;
         }
 
@@ -385,19 +477,22 @@
         .dark-theme .input-group {
             background: var(--dark-card);
             color: var(--dark-text);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
         }
 
         .dark-theme input,
         .dark-theme textarea,
         .dark-theme select {
-            background: #4a5568;
+            background: #374151;
             color: var(--dark-text);
+            border-color: #4a5568;
         }
 
         .dark-theme input:focus,
         .dark-theme textarea:focus,
         .dark-theme select:focus {
-            background: #718096;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 85, 212, 0.3);
         }
 
         .dark-theme .sidebar-item svg {
@@ -405,49 +500,60 @@
         }
 
         .dark-theme .sidebar-item.active {
-            background: rgba(0, 102, 255, 0.2);
+            background: rgba(0, 85, 212, 0.2);
         }
 
+        .dark-theme .tag {
+            background: #4a5568;
+            color: #d7dce4;
+        }
+
+        .dark-theme .tag:hover {
+            background: #5a677a;
+        }
+
+        /* More Options */
         .more-options {
             position: absolute;
             top: 12px;
             right: 12px;
             cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .card:hover .more-options,
+        .task-card:hover .more-options {
+            opacity: 1;
         }
 
         .more-options svg {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             color: var(--muted);
         }
 
-        .note-preview {
-            max-height: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-        }
-
+        /* Tooltip */
         .tooltip {
             position: absolute;
             background: #2d3748;
-            color: white;
+            color: #fff;
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 12px;
             z-index: 1000;
             display: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
+        /* Spinner */
         .spinner {
             border: 2px solid var(--spinner);
             border-top: 2px solid var(--primary);
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
             margin: 0 auto;
         }
 
@@ -461,6 +567,7 @@
             }
         }
 
+        /* Loading Overlay */
         .loading-overlay {
             position: absolute;
             top: 0;
@@ -473,338 +580,224 @@
             justify-content: center;
             z-index: 999;
         }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            background: #0044b3;
+        }
+
+        /* Quill Editor */
+        .quill-editor .ql-container {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            min-height: 200px;
+        }
+
+        .quill-editor .ql-toolbar {
+            border-bottom: none;
+        }
+
+        /* Inline Task Input */
+        .inline-task-input {
+            margin-top: 16px;
+        }
+
+        .inline-task-input input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .sidebar.collapsed {
+                width: 0;
+                padding: 0;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .fab {
+                bottom: 16px;
+                right: 16px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-item" onclick="toggleSidebar()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-                </svg>
-                <span>Menu</span>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-toggle" aria-label="Toggle sidebar" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                    </svg>
+                </button>
+                <input type="text" id="sidebarSearch" placeholder="Search pages..." oninput="searchSidebar()">
             </div>
-            <div class="sidebar-item" onclick="showPage('notes')" id="notesNav">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 2h10v7h-5l-1 1H7l-1-1H5V5z" />
-                </svg>
-                <span>Notes</span>
-            </div>
-            <div class="sidebar-item" onclick="showPage('todos')" id="todosNav">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span>Tasks</span>
-            </div>
-            <div class="sidebar-item" onclick="showPage('calendar')" id="calendarNav">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5h8a1 1 0 010 2H6a1 1 0 010-2z" clip-rule="evenodd" />
-                </svg>
-                <span>Calendar</span>
-            </div>
-            <div class="sidebar-item" onclick="showPage('favorites')" id="favoritesNav">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span>Favorites</span>
-            </div>
-            <div class="sidebar-item" onclick="showPage('archive')" id="archiveNav">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
-                    <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd" />
-                </svg>
-                <span>Archive</span>
-            </div>
-            <div class="sidebar-item" onclick="showPage('trash')" id="trashNav">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                </svg>
-                <span>Trash</span>
-            </div>
-            <div class="sidebar-item" onclick="showStats()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span>Insights</span>
-            </div>
-            <div class="sidebar-item" onclick="showSettings()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-                </svg>
-                <span>Settings</span>
-            </div>
-            <div class="sidebar-item" onclick="logout()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
-                </svg>
-                <span>Logout</span>
-            </div>
-        </div>
+            <nav class="sidebar-nav" id="sidebarNav">
+                <div class="sidebar-item active" id="notesNav" onclick="showPage('notes')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 2h10v7h-5l-1 1H7l-1-1H5V5z" />
+                    </svg>
+                    <span>Notes</span>
+                </div>
+                <div class="sidebar-item" id="todosNav" onclick="showPage('todos')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Tasks</span>
+                </div>
+                <div class="sidebar-item" id="calendarNav" onclick="showPage('calendar')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5h8a1 1 0 010 2H6a1 1 0 010-2z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Calendar</span>
+                </div>
+                <div class="sidebar-item" id="favoritesNav" onclick="showPage('favorites')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span>Favorites</span>
+                </div>
+                <div class="sidebar-item" id="archiveNav" onclick="showPage('archive')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
+                        <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Archive</span>
+                </div>
+                <div class="sidebar-item" id="trashNav" onclick="showPage('trash')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Trash</span>
+                </div>
+                <div class="sidebar-item" id="statsNav" onclick="showStats()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Insights</span>
+                </div>
+                <div class="sidebar-item" id="settingsNav" onclick="showSettings()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Settings</span>
+                </div>
+                <div class="sidebar-item" id="logoutNav" onclick="logout()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Logout</span>
+                </div>
+            </nav>
+        </aside>
 
-        <div class="main-content" id="mainContent">
-            <div class="header">
+        <main class="main-content" id="mainContent">
+            <header class="header">
                 <h1 id="pageTitle">Notes</h1>
-                <div style="display: flex; gap: 16px; align-items: center;">
-                    <input type="text" id="searchInput" placeholder="Search across all..." oninput="searchItems()">
+                <div class="header-actions">
+                    <input type="text" id="searchInput" placeholder="Search..." oninput="debounce(searchItems, 300)">
                     <button class="secondary" onclick="toggleFilterPanel()">Filters</button>
                     <button onclick="exportData()">Export</button>
                 </div>
-            </div>
+            </header>
 
-            <div id="notesPage" class="page">
+            <section id="notesPage" class="page">
                 <div class="input-group">
                     <button class="small" onclick="showCreateNoteModal()">+ New Note</button>
                     <button class="small secondary" onclick="showBulkActions('notes')">Bulk Actions</button>
                 </div>
                 <div id="notesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;"></div>
-            </div>
+            </section>
 
-            <div id="todosPage" class="page" style="display: none;">
+            <section id="todosPage" class="page" style="display: none;">
                 <div class="input-group">
                     <button class="small" onclick="showCreateTodoModal()">+ New Task</button>
                     <button class="small secondary" onclick="showBulkActions('todos')">Bulk Actions</button>
                 </div>
-                <div id="todosList" style="display: flex; flex-direction: column; gap: 20px;"></div>
-            </div>
+                <div id="todosList" style="display: flex; flex-direction: column; gap: 16px;"></div>
+                <div class="inline-task-input">
+                    <input type="text" id="inlineTodo" placeholder="Add a task..." onkeypress="if(event.key === 'Enter') addInlineTodo()">
+                </div>
+            </section>
 
-            <div id="calendarPage" class="page" style="display: none;">
+            <section id="calendarPage" class="page" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                     <button class="small secondary" onclick="previousMonth()">Previous</button>
                     <h2 id="calendarMonth">February 2025</h2>
                     <button class="small secondary" onclick="nextMonth()">Next</button>
                 </div>
                 <div class="calendar-view" id="calendarView"></div>
-            </div>
+            </section>
 
-            <div id="favoritesPage" class="page" style="display: none;">
+            <section id="favoritesPage" class="page" style="display: none;">
                 <div id="favoritesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;"></div>
-            </div>
+            </section>
 
-            <div id="archivePage" class="page" style="display: none;">
+            <section id="archivePage" class="page" style="display: none;">
                 <div id="archiveList" style="display: flex; flex-direction: column; gap: 20px;"></div>
-            </div>
+            </section>
 
-            <div id="trashPage" class="page" style="display: none;">
+            <section id="trashPage" class="page" style="display: none;">
                 <div id="trashList" style="display: flex; flex-direction: column; gap: 20px;"></div>
-            </div>
+            </section>
 
             <div class="loading-overlay" id="loadingOverlay" style="display: none;">
                 <div class="spinner"></div>
             </div>
-        </div>
+        </main>
+
+        <button class="fab" onclick="showQuickAdd()">+</button>
     </div>
 
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <h2>Welcome to Nota</h2>
-            <input type="email" id="emailInput" placeholder="Email">
-            <input type="password" id="passwordInput" placeholder="Password (min 6 characters)">
-            <div style="display: flex; gap: 16px; margin-top: 20px;">
-                <button id="loginBtn" onclick="login()">Login</button>
-                <button class="secondary" id="registerBtn" onclick="register()">Register</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="createNoteModal" class="modal">
-        <div class="modal-content">
-            <h2>Create New Note</h2>
-            <input type="text" id="newNoteTitle" placeholder="Title" required>
-            <textarea id="newNoteContent" placeholder="Start typing... (supports #tags, @mentions, /commands)"></textarea>
-            <div style="display: flex; gap: 16px;">
-                <select id="newNoteCategory">
-                    <option value="personal">Personal</option>
-                    <option value="work">Work</option>
-                    <option value="ideas">Ideas</option>
-                    <option value="custom">Custom</option>
-                </select>
-                <input type="text" id="newNoteTags" placeholder="Tags (e.g., #urgent, #project)">
-                <input type="color" id="newNoteColor" value="#ffffff" title="Background Color">
-            </div>
-            <select id="noteTemplate">
-                <option value="">No Template</option>
-                <option value="meeting">Meeting Notes</option>
-                <option value="journal">Daily Journal</option>
-                <option value="brainstorm">Brainstorm Session</option>
-                <option value="research">Research Log</option>
-            </select>
-            <input type="text" id="newNoteLinks" placeholder="Links (comma-separated)">
-            <div style="display: flex; gap: 16px; margin-top: 20px;">
-                <button id="createNoteBtn" onclick="addNote()">Create</button>
-                <button class="secondary" onclick="closeModal('createNoteModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="createTodoModal" class="modal">
-        <div class="modal-content">
-            <h2>Create New Task</h2>
-            <input type="text" id="newTodoTitle" placeholder="Task Title" required>
-            <div style="display: flex; gap: 16px;">
-                <select id="newTodoPriority">
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                </select>
-                <input type="datetime-local" id="newTodoDueDate">
-                <input type="text" id="newTodoTags" placeholder="Tags (e.g., #urgent)">
-            </div>
-            <input type="number" id="newTodoEffort" min="1" max="10" placeholder="Effort (1-10)">
-            <select id="todoRecurrence">
-                <option value="">One-time</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="custom">Custom</option>
-            </select>
-            <input type="text" id="newTodoAssignees" placeholder="Assignees (emails, comma-separated)">
-            <input type="text" id="newTodoDependencies" placeholder="Dependencies (task IDs, comma-separated)">
-            <div style="display: flex; gap: 16px; margin-top: 20px;">
-                <button id="createTodoBtn" onclick="addTodo()">Create</button>
-                <button class="secondary" onclick="closeModal('createTodoModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="noteDetailModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-nav">
-                <button class="small secondary" onclick="navigateNote('prev')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <button class="small secondary" onclick="navigateNote('next')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-            </div>
-            <div id="noteDetailContent"></div>
-            <button onclick="closeModal('noteDetailModal')" style="margin-top: 20px;">Close</button>
-        </div>
-    </div>
-
-    <div id="dayDetailModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-nav">
-                <button class="small secondary" onclick="navigateDay('prev')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <button class="small secondary" onclick="navigateDay('next')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-            </div>
-            <div id="dayDetailContent"></div>
-            <button onclick="closeModal('dayDetailModal')" style="margin-top: 20px;">Close</button>
-        </div>
-    </div>
-
-    <div id="statsModal" class="modal">
-        <div class="modal-content">
-            <h2>Productivity Insights</h2>
-            <div id="statsContent"></div>
-            <button onclick="closeModal('statsModal')">Close</button>
-        </div>
-    </div>
-
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <h2>Settings</h2>
-            <div id="settingsContent">
-                <label>Theme:</label>
-                <select id="themeSelect" onchange="changeTheme()">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                </select>
-                <label>Default View:</label>
-                <select id="defaultView">
-                    <option value="notes">Notes</option>
-                    <option value="todos">Tasks</option>
-                    <option value="calendar">Calendar</option>
-                </select>
-                <label>Time Format:</label>
-                <select id="timeFormat">
-                    <option value="12">12-hour</option>
-                    <option value="24">24-hour</option>
-                </select>
-                <label>Notifications:</label>
-                <input type="checkbox" id="notificationsToggle">
-                <label>Auto-Save Interval (seconds):</label>
-                <input type="number" id="autoSaveInterval" min="5" value="30">
-                <label>Max Preview Characters:</label>
-                <input type="number" id="maxPreviewChars" min="100" value="200">
-                <label>Default Task Sort:</label>
-                <select id="taskSort">
-                    <option value="priority">Priority</option>
-                    <option value="dueDate">Due Date</option>
-                    <option value="created">Created</option>
-                </select>
-                <label>Default Note Sort:</label>
-                <select id="noteSort">
-                    <option value="updated">Last Updated</option>
-                    <option value="created">Created</option>
-                    <option value="title">Title</option>
-                </select>
-            </div>
-            <button onclick="saveSettings()">Save & Close</button>
-        </div>
-    </div>
-
-    <div id="filterModal" class="modal">
-        <div class="modal-content">
-            <h2>Filters</h2>
-            <select id="filterCategory">
-                <option value="">All Categories</option>
-                <option value="personal">Personal</option>
-                <option value="work">Work</option>
-                <option value="ideas">Ideas</option>
-            </select>
-            <input type="text" id="filterTags" placeholder="Filter by tags">
-            <select id="filterPriority">
-                <option value="">All Priorities</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-            </select>
-            <select id="filterStatus">
-                <option value="">All Statuses</option>
-                <option value="completed">Completed</option>
-                <option value="incomplete">Incomplete</option>
-            </select>
-            <button onclick="applyFilters()">Apply</button>
-            <button class="secondary" onclick="closeModal('filterModal')">Cancel</button>
-        </div>
-    </div>
-
-    <div id="bulkActionsModal" class="modal">
-        <div class="modal-content">
-            <h2>Bulk Actions</h2>
-            <select id="bulkActionType">
-                <option value="archive">Archive Selected</option>
-                <option value="trash">Trash Selected</option>
-                <option value="favorite">Favorite Selected</option>
-                <option value="pin">Pin Selected</option>
-            </select>
-            <div id="bulkItemsList" style="max-height: 200px; overflow-y: auto; margin-top: 16px;"></div>
-            <button onclick="executeBulkAction()">Execute</button>
-            <button class="secondary" onclick="closeModal('bulkActionsModal')">Cancel</button>
-        </div>
-    </div>
-
+    <!-- Modals -->
+    <div id="authModal" class="modal"></div>
+    <div id="createNoteModal" class="modal"></div>
+    <div id="createTodoModal" class="modal"></div>
+    <div id="noteDetailModal" class="modal"></div>
+    <div id="dayDetailModal" class="modal"></div>
+    <div id="statsModal" class="modal"></div>
+    <div id="settingsModal" class="modal"></div>
+    <div id="filterModal" class="modal"></div>
+    <div id="bulkActionsModal" class="modal"></div>
+    <div id="quickAddModal" class="modal"></div>
     <div id="contextMenu" class="context-menu" style="display: none;"></div>
     <div id="tooltip" class="tooltip"></div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
     <script>
-        // Firebase Configuration
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDigoOu697kT9ZknbEr0o8ITJrDsxuPp_g",
             authDomain: "votecanvass.firebaseapp.com",
@@ -819,7 +812,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // State Management
+        // Global State
         let currentUser = null;
         let notes = [];
         let todos = [];
@@ -834,70 +827,47 @@
             noteSort: 'updated'
         };
         let currentPage = 'notes';
-        let currentMonth = new Date().getMonth(); // Current month
+        let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let currentNoteIndex = -1;
         let currentDay = null;
         let selectedItems = new Set();
         let isLoading = false;
+        let offlineNotes = JSON.parse(localStorage.getItem('offlineNotes') || '[]');
+        let offlineTodos = JSON.parse(localStorage.getItem('offlineTodos') || '[]');
 
         // Utility Functions
         function showLoading() {
             isLoading = true;
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.style.display = 'flex';
         }
 
         function hideLoading() {
             isLoading = false;
-            document.getElementById('loadingOverlay').style.display = 'none';
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.style.display = 'none';
         }
 
         function showModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                modal.focus();
+            }
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            selectedItems.clear();
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                selectedItems.clear();
+            }
         }
 
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        }
-
-        function showPage(pageId) {
-            if (currentPage === pageId) return;
-            showLoading();
-            document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
-            document.getElementById(`${pageId}Page`).style.display = 'block';
-            document.getElementById('pageTitle').textContent = pageId.charAt(0).toUpperCase() + pageId.slice(1);
-            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-            document.getElementById(`${pageId}Nav`).classList.add('active');
-            selectedItems.clear();
-            currentPage = pageId;
-
-            // Render content based on the selected page
-            switch (pageId) {
-                case 'notes':
-                    renderNotes(); // Render active notes only
-                    break;
-                case 'todos':
-                    renderTodos(); // Render active todos only
-                    break;
-                case 'calendar':
-                    renderCalendar();
-                    break;
-                case 'favorites':
-                    renderFavorites();
-                    break;
-                case 'archive':
-                    renderArchive();
-                    break;
-                case 'trash':
-                    renderTrash();
-                    break;
-            }
-            hideLoading();
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.toggle('collapsed');
         }
 
         function formatDate(timestamp) {
@@ -925,70 +895,40 @@
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
 
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Authentication
         auth.onAuthStateChanged(async user => {
             showLoading();
+            console.log('Auth state changed:', user);
             if (user) {
                 currentUser = user;
                 closeModal('authModal');
                 await initializeUserCollection();
                 await loadUserData();
                 await loadSettings();
-                showPage(settings.defaultView); // This will render the default view
+                showPage(settings.defaultView || 'notes');
             } else {
                 currentUser = null;
-                notes = [];
-                todos = [];
+                notes = offlineNotes;
+                todos = offlineTodos;
+                renderAuthModal();
                 showModal('authModal');
-                renderNotes(); // Clear notes display
-                renderTodos(); // Clear todos display
+                renderNotes();
+                renderTodos();
             }
             hideLoading();
         });
-
-        async function login() {
-            const email = document.getElementById('emailInput').value.trim();
-            const password = document.getElementById('passwordInput').value;
-            const loginBtn = document.getElementById('loginBtn');
-            if (!email || !password) return alert('Email and password are required.');
-            showLoading();
-            loginBtn.disabled = true;
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-            } catch (error) {
-                alert(`Login failed: ${error.message}`);
-            } finally {
-                loginBtn.disabled = false;
-                hideLoading();
-            }
-        }
-
-        async function register() {
-            const email = document.getElementById('emailInput').value.trim();
-            const password = document.getElementById('passwordInput').value;
-            const registerBtn = document.getElementById('registerBtn');
-            if (!email || password.length < 6) return alert('Enter a valid email and password (min 6 characters).');
-            showLoading();
-            registerBtn.disabled = true;
-            try {
-                await auth.createUserWithEmailAndPassword(email, password);
-            } catch (error) {
-                alert(`Registration failed: ${error.message}`);
-            } finally {
-                registerBtn.disabled = false;
-                hideLoading();
-            }
-        }
-
-        function logout() {
-            showLoading();
-            auth.signOut().then(() => {
-                selectedItems.clear();
-                hideLoading();
-            }).catch(error => {
-                alert(`Logout failed: ${error.message}`);
-                hideLoading();
-            });
-        }
 
         async function initializeUserCollection() {
             const userRef = db.collection('users').doc(currentUser.uid);
@@ -999,55 +939,122 @@
                 }, {
                     merge: true
                 });
+                console.log('User collection initialized');
             } catch (error) {
                 console.error('Error initializing user:', error);
-                throw error;
             }
         }
 
+        function renderAuthModal() {
+            const modal = document.getElementById('authModal');
+            if (modal) {
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <h2>Welcome to Nota</h2>
+                        <input type="email" id="emailInput" placeholder="Email" aria-label="Email">
+                        <input type="password" id="passwordInput" placeholder="Password (min 6 characters)" aria-label="Password">
+                        <div style="display: flex; gap: 16px; margin-top: 20px;">
+                            <button id="loginBtn" onclick="login()">Login</button>
+                            <button class="secondary" id="registerBtn" onclick="register()">Register</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('emailInput')?.value.trim();
+            const password = document.getElementById('passwordInput')?.value;
+            const loginBtn = document.getElementById('loginBtn');
+            if (!email || !password) return alert('Email and password are required.');
+            if (!loginBtn) return console.error('Login button not found');
+            showLoading();
+            loginBtn.disabled = true;
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                console.log('Login successful');
+            } catch (error) {
+                console.error('Login failed:', error);
+                alert(`Login failed: ${error.message}`);
+            } finally {
+                loginBtn.disabled = false;
+                hideLoading();
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('emailInput')?.value.trim();
+            const password = document.getElementById('passwordInput')?.value;
+            const registerBtn = document.getElementById('registerBtn');
+            if (!email || password.length < 6) return alert('Enter a valid email and password (min 6 characters).');
+            if (!registerBtn) return console.error('Register button not found');
+            showLoading();
+            registerBtn.disabled = true;
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                console.log('Registration successful');
+            } catch (error) {
+                console.error('Registration failed:', error);
+                alert(`Registration failed: ${error.message}`);
+            } finally {
+                registerBtn.disabled = false;
+                hideLoading();
+            }
+        }
+
+        async function logout() {
+            showLoading();
+            try {
+                await auth.signOut();
+                selectedItems.clear();
+                console.log('Logout successful');
+            } catch (error) {
+                console.error('Logout failed:', error);
+                alert(`Logout failed: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Data Loading
         async function loadUserData() {
+            if (!currentUser) return;
             const userRef = db.collection('users').doc(currentUser.uid);
             showLoading();
             try {
-                // Notes listener
                 userRef.collection('notes').onSnapshot(snapshot => {
                     notes = snapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data()
                     }));
-                    console.log('Notes loaded:', notes); // Debugging: Check if data is received
+                    console.log('Notes loaded:', notes);
                     if (currentPage === 'notes') renderNotes();
                     if (currentPage === 'favorites') renderFavorites();
                     if (currentPage === 'archive') renderArchive();
                     if (currentPage === 'trash') renderTrash();
                     if (currentNoteIndex >= 0 && currentNoteIndex < notes.length) showNoteDetail(notes[currentNoteIndex].id);
+                    syncOfflineNotes();
                 }, error => {
                     console.error('Notes snapshot error:', error);
                     alert('Failed to load notes: ' + error.message);
-                    hideLoading();
                 });
 
-                // Todos listener
                 userRef.collection('todos').onSnapshot(snapshot => {
                     todos = snapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data()
                     }));
-                    console.log('Todos loaded:', todos); // Debugging: Check if data is received
+                    console.log('Todos loaded:', todos);
                     if (currentPage === 'todos') renderTodos();
                     if (currentPage === 'calendar') renderCalendar();
                     if (currentPage === 'archive') renderArchive();
                     if (currentPage === 'trash') renderTrash();
                     if (currentDay) showDayDetail(currentDay);
+                    syncOfflineTodos();
                 }, error => {
                     console.error('Todos snapshot error:', error);
                     alert('Failed to load todos: ' + error.message);
-                    hideLoading();
                 });
-
-                // Initial render to ensure UI updates immediately
-                renderNotes();
-                renderTodos();
             } catch (error) {
                 console.error('Error in loadUserData:', error);
                 alert('Failed to initialize data listeners: ' + error.message);
@@ -1056,43 +1063,100 @@
             }
         }
 
+        function syncOfflineNotes() {
+            localStorage.setItem('offlineNotes', JSON.stringify(notes));
+        }
+
+        function syncOfflineTodos() {
+            localStorage.setItem('offlineTodos', JSON.stringify(todos));
+        }
+
+        // Settings
         async function loadSettings() {
+            if (!currentUser) return;
             const settingsRef = db.collection('users').doc(currentUser.uid).collection('settings').doc('preferences');
             try {
                 const doc = await settingsRef.get();
                 if (doc.exists) {
-                    settings = {
-                        ...settings,
-                        ...doc.data()
-                    };
+                    Object.assign(settings, doc.data());
                     applySettings();
                 } else {
                     await settingsRef.set(settings);
                 }
+                console.log('Settings loaded:', settings);
             } catch (error) {
                 console.error('Error loading settings:', error);
-                alert('Failed to load settings: ' + error.message);
             }
         }
 
+        function showSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (!modal) return console.error('Settings modal not found');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Settings</h2>
+                    <label>Theme:</label>
+                    <select id="themeSelect" onchange="changeTheme()">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                    <label>Default View:</label>
+                    <select id="defaultView">
+                        <option value="notes">Notes</option>
+                        <option value="todos">Tasks</option>
+                        <option value="calendar">Calendar</option>
+                    </select>
+                    <label>Time Format:</label>
+                    <select id="timeFormat">
+                        <option value="12">12-hour</option>
+                        <option value="24">24-hour</option>
+                    </select>
+                    <label>Notifications:</label>
+                    <input type="checkbox" id="notificationsToggle">
+                    <label>Auto-Save Interval (seconds):</label>
+                    <input type="number" id="autoSaveInterval" min="5" value="30">
+                    <label>Max Preview Characters:</label>
+                    <input type="number" id="maxPreviewChars" min="100" value="200">
+                    <label>Default Task Sort:</label>
+                    <select id="taskSort">
+                        <option value="priority">Priority</option>
+                        <option value="dueDate">Due Date</option>
+                        <option value="created">Created</option>
+                    </select>
+                    <label>Default Note Sort:</label>
+                    <select id="noteSort">
+                        <option value="updated">Last Updated</option>
+                        <option value="created">Created</option>
+                        <option value="title">Title</option>
+                    </select>
+                    <button onclick="saveSettings()">Save & Close</button>
+                </div>
+            `;
+            applySettings();
+            showModal('settingsModal');
+        }
+
         async function saveSettings() {
+            if (!currentUser) return;
             const settingsRef = db.collection('users').doc(currentUser.uid).collection('settings').doc('preferences');
             showLoading();
             try {
-                settings.theme = document.getElementById('themeSelect').value;
-                settings.defaultView = document.getElementById('defaultView').value;
-                settings.timeFormat = document.getElementById('timeFormat').value;
-                settings.notifications = document.getElementById('notificationsToggle').checked;
-                settings.autoSaveInterval = Math.max(5, parseInt(document.getElementById('autoSaveInterval').value) || 30);
-                settings.maxPreviewChars = Math.max(100, parseInt(document.getElementById('maxPreviewChars').value) || 200);
-                settings.taskSort = document.getElementById('taskSort').value;
-                settings.noteSort = document.getElementById('noteSort').value;
+                settings.theme = document.getElementById('themeSelect')?.value || 'light';
+                settings.defaultView = document.getElementById('defaultView')?.value || 'notes';
+                settings.timeFormat = document.getElementById('timeFormat')?.value || '12';
+                settings.notifications = document.getElementById('notificationsToggle')?.checked || false;
+                settings.autoSaveInterval = parseInt(document.getElementById('autoSaveInterval')?.value) || 30;
+                settings.maxPreviewChars = parseInt(document.getElementById('maxPreviewChars')?.value) || 200;
+                settings.taskSort = document.getElementById('taskSort')?.value || 'priority';
+                settings.noteSort = document.getElementById('noteSort')?.value || 'updated';
                 await settingsRef.set(settings, {
                     merge: true
                 });
                 applySettings();
                 closeModal('settingsModal');
+                console.log('Settings saved:', settings);
             } catch (error) {
+                console.error('Failed to save settings:', error);
                 alert('Failed to save settings: ' + error.message);
             } finally {
                 hideLoading();
@@ -1101,64 +1165,167 @@
 
         function applySettings() {
             document.body.classList.toggle('dark-theme', settings.theme === 'dark');
-            document.getElementById('themeSelect').value = settings.theme;
-            document.getElementById('defaultView').value = settings.defaultView;
-            document.getElementById('timeFormat').value = settings.timeFormat;
-            document.getElementById('notificationsToggle').checked = settings.notifications;
-            document.getElementById('autoSaveInterval').value = settings.autoSaveInterval;
-            document.getElementById('maxPreviewChars').value = settings.maxPreviewChars;
-            document.getElementById('taskSort').value = settings.taskSort;
-            document.getElementById('noteSort').value = settings.noteSort;
+            const themeSelect = document.getElementById('themeSelect');
+            const defaultView = document.getElementById('defaultView');
+            const timeFormat = document.getElementById('timeFormat');
+            const notificationsToggle = document.getElementById('notificationsToggle');
+            const autoSaveInterval = document.getElementById('autoSaveInterval');
+            const maxPreviewChars = document.getElementById('maxPreviewChars');
+            const taskSort = document.getElementById('taskSort');
+            const noteSort = document.getElementById('noteSort');
+            if (themeSelect) themeSelect.value = settings.theme;
+            if (defaultView) defaultView.value = settings.defaultView;
+            if (timeFormat) timeFormat.value = settings.timeFormat;
+            if (notificationsToggle) notificationsToggle.checked = settings.notifications;
+            if (autoSaveInterval) autoSaveInterval.value = settings.autoSaveInterval;
+            if (maxPreviewChars) maxPreviewChars.value = settings.maxPreviewChars;
+            if (taskSort) taskSort.value = settings.taskSort;
+            if (noteSort) noteSort.value = settings.noteSort;
         }
 
-        // Note Functions
+        function changeTheme() {
+            const theme = document.getElementById('themeSelect')?.value || 'light';
+            document.body.classList.toggle('dark-theme', theme === 'dark');
+        }
+
+        // Page Navigation
+        function showPage(pageId) {
+            if (currentPage === pageId) return;
+            showLoading();
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.style.display = 'none');
+            const targetPage = document.getElementById(`${pageId}Page`);
+            if (targetPage) targetPage.style.display = 'block';
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle) pageTitle.textContent = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            const navItem = document.getElementById(`${pageId}Nav`);
+            if (navItem) navItem.classList.add('active');
+            selectedItems.clear();
+            currentPage = pageId;
+
+            switch (pageId) {
+                case 'notes':
+                    renderNotes();
+                    break;
+                case 'todos':
+                    renderTodos();
+                    break;
+                case 'calendar':
+                    renderCalendar();
+                    break;
+                case 'favorites':
+                    renderFavorites();
+                    break;
+                case 'archive':
+                    renderArchive();
+                    break;
+                case 'trash':
+                    renderTrash();
+                    break;
+            }
+            hideLoading();
+        }
+
+        // Notes
+        function renderNotes(filter = '') {
+            const notesList = document.getElementById('notesList');
+            if (!notesList) return console.error('notesList not found');
+            let filteredNotes = notes.filter(n => !n.trashed && !n.archived);
+            if (filter) {
+                const lowerFilter = filter.toLowerCase();
+                filteredNotes = filteredNotes.filter(n =>
+                    (n.title?.toLowerCase().includes(lowerFilter)) ||
+                    (n.content?.toLowerCase().includes(lowerFilter)) ||
+                    (n.tags?.some(t => t.toLowerCase().includes(lowerFilter)))
+                );
+            }
+            switch (settings.noteSort) {
+                case 'created':
+                    filteredNotes.sort((a, b) => (b.created?.toDate() || 0) - (a.created?.toDate() || 0));
+                    break;
+                case 'title':
+                    filteredNotes.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+                    break;
+                default:
+                    filteredNotes.sort((a, b) => (b.pinned || 0) - (a.pinned || 0) || ((b.updated?.toDate() || 0) - (a.updated?.toDate() || 0)));
+            }
+            notesList.innerHTML = filteredNotes.length ? filteredNotes.map(note => `
+                <div class="card" data-id="${note.id}" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
+                    <h3>${note.title || 'Untitled'}</h3>
+                    <div class="note-preview">${note.content ? note.content.replace(/<[^>]+>/g, '').substring(0, settings.maxPreviewChars) + (note.content.length > settings.maxPreviewChars ? '...' : '') : 'No content'}</div>
+                    <div class="tags">${note.tags?.map(tag => `<span class="tag">${tag}</span>`).join('') || ''}</div>
+                    <small>Updated: ${formatDate(note.updated)}</small>
+                    <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()" onclick="showNoteContextMenu(event, '${note.id}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--muted);">No notes found.</p>';
+            console.log('Notes rendered:', filteredNotes);
+        }
+
         function showCreateNoteModal() {
-            document.getElementById('newNoteTitle').value = '';
-            document.getElementById('newNoteContent').value = '';
-            document.getElementById('newNoteTags').value = '';
-            document.getElementById('newNoteColor').value = '#ffffff';
-            document.getElementById('newNoteCategory').value = 'personal';
-            document.getElementById('noteTemplate').value = '';
-            document.getElementById('newNoteLinks').value = '';
+            const modal = document.getElementById('createNoteModal');
+            if (!modal) return console.error('createNoteModal not found');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Create New Note</h2>
+                    <input type="text" id="newNoteTitle" placeholder="Title" required>
+                    <div id="quillEditor" class="quill-editor"></div>
+                    <div style="display: flex; gap: 16px; margin-top: 16px;">
+                        <select id="newNoteCategory">
+                            <option value="personal">Personal</option>
+                            <option value="work">Work</option>
+                            <option value="ideas">Ideas</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                        <input type="text" id="newNoteTags" placeholder="Tags (e.g., #urgent, #project)">
+                        <input type="color" id="newNoteColor" value="#ffffff" title="Background Color">
+                    </div>
+                    <input type="text" id="newNoteLinks" placeholder="Links (comma-separated)">
+                    <div style="display: flex; gap: 16px; margin-top: 20px;">
+                        <button id="createNoteBtn" onclick="addNote()">Create</button>
+                        <button class="secondary" onclick="closeModal('createNoteModal')">Cancel</button>
+                    </div>
+                </div>
+            `;
+            const quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{
+                            'header': [1, 2, 3, false]
+                        }],
+                        ['bold', 'italic', 'underline'],
+                        ['link', 'image'],
+                        [{
+                            'list': 'ordered'
+                        }, {
+                            'list': 'bullet'
+                        }],
+                        ['clean']
+                    ]
+                }
+            });
             showModal('createNoteModal');
         }
 
         async function addNote() {
             if (!currentUser) return alert('Please log in to create a note.');
-            const title = document.getElementById('newNoteTitle').value.trim();
+            const title = document.getElementById('newNoteTitle')?.value.trim();
             if (!title) return alert('Title is required.');
-            let content = document.getElementById('newNoteContent').value.trim();
-            const category = document.getElementById('newNoteCategory').value;
-            const tags = document.getElementById('newNoteTags').value.split(',').map(t => t.trim()).filter(t => t);
-            const color = document.getElementById('newNoteColor').value;
-            const template = document.getElementById('noteTemplate').value;
-            const links = document.getElementById('newNoteLinks').value.split(',').map(l => l.trim()).filter(l => l);
-
-            if (template) {
-                switch (template) {
-                    case 'meeting':
-                        content = `Meeting Notes\n- Date: ${new Date().toLocaleDateString()}\n- Attendees:\n- Agenda:\n- Action Items:\n${content}`;
-                        break;
-                    case 'journal':
-                        content = `Journal Entry - ${new Date().toLocaleDateString()}\n- Mood:\n- Highlights:\n- Reflections:\n${content}`;
-                        break;
-                    case 'brainstorm':
-                        content = `Brainstorm Session\n- Topic:\n- Ideas:\n  - \n- Next Steps:\n${content}`;
-                        break;
-                    case 'research':
-                        content = `Research Log\n- Topic:\n- Sources:\n- Findings:\n- Notes:\n${content}`;
-                        break;
-                }
-            }
-
+            const content = document.querySelector('#quillEditor .ql-editor')?.innerHTML || '';
+            const category = document.getElementById('newNoteCategory')?.value;
+            const tags = document.getElementById('newNoteTags')?.value.split(',').map(t => t.trim()).filter(t => t);
+            const color = document.getElementById('newNoteColor')?.value;
+            const links = document.getElementById('newNoteLinks')?.value.split(',').map(l => l.trim()).filter(l => l);
             const createBtn = document.getElementById('createNoteBtn');
+            if (!createBtn) return console.error('createNoteBtn not found');
+
             showLoading();
             createBtn.disabled = true;
-
             try {
-                // Use client-side timestamp for versionHistory to avoid serverTimestamp in arrays
                 const initialTimestamp = new Date().toISOString();
-
                 const noteData = {
                     title,
                     content,
@@ -1172,26 +1339,25 @@
                     favorited: false,
                     archived: false,
                     trashed: false,
-                    wordCount: content.split(/\s+/).filter(w => w.length > 0).length,
+                    wordCount: content.replace(/<[^>]+>/g, '').split(/\s+/).filter(w => w.length > 0).length,
                     mentions: extractMentions(content),
                     comments: [],
                     attachments: [],
                     versionHistory: [{
                         content,
                         timestamp: initialTimestamp
-                    }], // Client-side timestamp
+                    }],
                     locked: false,
                     priority: 0,
                     reminders: [],
                     collaborators: []
                 };
-
-                // Add the document to Firestore
                 await db.collection('users').doc(currentUser.uid).collection('notes').add(noteData);
-
                 closeModal('createNoteModal');
                 if (settings.notifications) notify('Note created successfully!');
+                console.log('Note added:', noteData);
             } catch (error) {
+                console.error('Failed to create note:', error);
                 alert('Failed to create note: ' + error.message);
             } finally {
                 createBtn.disabled = false;
@@ -1211,11 +1377,13 @@
                 await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
                     content: newContent,
                     updated: firebase.firestore.FieldValue.serverTimestamp(),
-                    wordCount: newContent.split(/\s+/).length,
+                    wordCount: newContent.replace(/<[^>]+>/g, '').split(/\s+/).length,
                     mentions: extractMentions(newContent),
                     versionHistory: updatedHistory
                 });
+                console.log('Note edited:', id);
             } catch (error) {
+                console.error('Failed to edit note:', error);
                 alert('Failed to edit note: ' + error.message);
             } finally {
                 hideLoading();
@@ -1229,7 +1397,9 @@
                     trashed: true,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Note deleted:', id);
             } catch (error) {
+                console.error('Failed to delete note:', error);
                 alert('Failed to delete note: ' + error.message);
             } finally {
                 hideLoading();
@@ -1238,13 +1408,16 @@
 
         async function togglePinNote(id) {
             const note = notes.find(n => n.id === id);
+            if (!note) return;
             showLoading();
             try {
                 await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
                     pinned: !note.pinned,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Pin toggled:', id);
             } catch (error) {
+                console.error('Failed to toggle pin:', error);
                 alert('Failed to toggle pin: ' + error.message);
             } finally {
                 hideLoading();
@@ -1253,13 +1426,16 @@
 
         async function toggleFavoriteNote(id) {
             const note = notes.find(n => n.id === id);
+            if (!note) return;
             showLoading();
             try {
                 await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
                     favorited: !note.favorited,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Favorite toggled:', id);
             } catch (error) {
+                console.error('Failed to toggle favorite:', error);
                 alert('Failed to toggle favorite: ' + error.message);
             } finally {
                 hideLoading();
@@ -1273,7 +1449,9 @@
                     archived: true,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Note archived:', id);
             } catch (error) {
+                console.error('Failed to archive note:', error);
                 alert('Failed to archive note: ' + error.message);
             } finally {
                 hideLoading();
@@ -1288,7 +1466,9 @@
                 await navigator.clipboard.writeText(url);
                 alert('Share link copied to clipboard!');
                 if (settings.notifications) notify('Note shared!');
+                console.log('Note shared:', id);
             } catch (error) {
+                console.error('Failed to copy share link:', error);
                 alert('Failed to copy share link: ' + error.message);
             }
         }
@@ -1309,7 +1489,9 @@
                     comments,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Comment added:', id);
             } catch (error) {
+                console.error('Failed to add comment:', error);
                 alert('Failed to add comment: ' + error.message);
             } finally {
                 hideLoading();
@@ -1318,13 +1500,16 @@
 
         async function lockNote(id) {
             const note = notes.find(n => n.id === id);
+            if (!note) return;
             showLoading();
             try {
                 await db.collection('users').doc(currentUser.uid).collection('notes').doc(id).update({
                     locked: !note.locked,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Lock toggled:', id);
             } catch (error) {
+                console.error('Failed to toggle lock:', error);
                 alert('Failed to toggle lock: ' + error.message);
             } finally {
                 hideLoading();
@@ -1340,7 +1525,9 @@
                     priority,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Priority set:', id);
             } catch (error) {
+                console.error('Failed to set priority:', error);
                 alert('Failed to set priority: ' + error.message);
             } finally {
                 hideLoading();
@@ -1353,6 +1540,7 @@
             const reminderDate = new Date(date);
             if (isNaN(reminderDate.getTime())) return alert('Invalid date format.');
             const note = notes.find(n => n.id === id);
+            if (!note) return;
             showLoading();
             try {
                 const reminders = [...(note.reminders || []), reminderDate.toISOString()];
@@ -1360,43 +1548,170 @@
                     reminders,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Reminder added:', id);
             } catch (error) {
+                console.error('Failed to add reminder:', error);
                 alert('Failed to add reminder: ' + error.message);
             } finally {
                 hideLoading();
             }
         }
 
-        // Todo Functions
+        function showNoteDetail(id) {
+            const note = notes.find(n => n.id === id);
+            if (!note) return console.error('Note not found:', id);
+            currentNoteIndex = notes.findIndex(n => n.id === id);
+            const modal = document.getElementById('noteDetailModal');
+            if (!modal) return console.error('noteDetailModal not found');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-nav">
+                        <button class="small secondary" onclick="navigateNote('prev')">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <button class="small secondary" onclick="navigateNote('next')">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <h2 style="font-size: 24px; font-weight: 700;">${note.title}</h2>
+                    <div id="noteDetailEditor" class="quill-editor" ${note.locked ? 'disabled' : ''}></div>
+                    <div style="font-size: 12px; color: var(--muted); margin-top: 12px;">
+                        <span>Category: ${note.category || 'N/A'}</span> • <span>Words: ${note.wordCount || 0}</span> • 
+                        <span>Created: ${formatDate(note.created)}</span> • <span>Updated: ${formatDate(note.updated)}</span>
+                        ${note.priority > 0 ? `<span class="badge" style="background: ${priorityColor(note.priority)};">P${note.priority}</span>` : ''}
+                    </div>
+                    <div>${note.tags?.map(tag => `<span class="tag">${tag}</span>`).join('') || ''}</div>
+                    ${note.links?.length ? `<div style="margin-top: 12px;"><strong>Links:</strong> ${note.links.map(l => `<a href="${l}" target="_blank">${l}</a>`).join(', ')}</div>` : ''}
+                    ${note.comments?.length ? `<h3 style="margin-top: 20px;">Comments</h3>${note.comments.map(c => `<p style="font-size: 14px;"><strong>${c.user}</strong> (${formatDate(c.timestamp)}): ${c.text}</p>`).join('')}` : ''}
+                    ${note.versionHistory?.length > 1 ? `<h3 style="margin-top: 20px;">Version History</h3>${note.versionHistory.map((v, i) => `<p style="font-size: 12px;">${formatDate(v.timestamp)}: ${v.content.replace(/<[^>]+>/g, '').substring(0, 50)}...</p>`).join('')}` : ''}
+                    ${note.reminders?.length ? `<h3 style="margin-top: 20px;">Reminders</h3>${note.reminders.map(r => `<p style="font-size: 12px;">${formatDate(new Date(r))}</p>`).join('')}` : ''}
+                    <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px;">
+                        <button onclick="editNote('${note.id}', document.querySelector('#noteDetailEditor .ql-editor')?.innerHTML)" ${note.locked ? 'disabled' : ''}>Save</button>
+                        <button class="secondary" onclick="addComment('${note.id}')">Comment</button>
+                        <button class="secondary" onclick="togglePinNote('${note.id}')">${note.pinned ? 'Unpin' : 'Pin'}</button>
+                        <button class="secondary" onclick="toggleFavoriteNote('${note.id}')">${note.favorited ? 'Unfavorite' : 'Favorite'}</button>
+                        <button class="secondary" onclick="shareNote('${note.id}')">Share</button>
+                        <button class="secondary" onclick="lockNote('${note.id}')">${note.locked ? 'Unlock' : 'Lock'}</button>
+                        <button class="secondary" onclick="setNotePriority('${note.id}')">Set Priority</button>
+                        <button class="secondary" onclick="addReminderToNote('${note.id}')">Add Reminder</button>
+                        <button class="secondary" onclick="archiveNote('${note.id}')">Archive</button>
+                        <button class="secondary" onclick="deleteNote('${note.id}')">Delete</button>
+                        <button class="secondary" onclick="closeModal('noteDetailModal')">Close</button>
+                    </div>
+                </div>
+            `;
+            const quill = new Quill('#noteDetailEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: !note.locked
+                },
+                readOnly: note.locked
+            });
+            quill.root.innerHTML = note.content || '';
+            showModal('noteDetailModal');
+        }
+
+        function navigateNote(direction) {
+            if (direction === 'prev' && currentNoteIndex > 0) {
+                currentNoteIndex--;
+                showNoteDetail(notes[currentNoteIndex].id);
+            } else if (direction === 'next' && currentNoteIndex < notes.length - 1) {
+                currentNoteIndex++;
+                showNoteDetail(notes[currentNoteIndex].id);
+            }
+        }
+
+        // Todos
+        function renderTodos(filter = null) {
+            const todosList = document.getElementById('todosList');
+            if (!todosList) return console.error('todosList not found');
+            let todosToRender = filter || todos.filter(t => !t.archived && !t.trashed);
+            switch (settings.taskSort) {
+                case 'dueDate':
+                    todosToRender.sort((a, b) => (a.dueDate || 'Z') > (b.dueDate || 'Z') ? 1 : -1);
+                    break;
+                case 'created':
+                    todosToRender.sort((a, b) => (b.created?.toDate() || 0) - (a.created?.toDate() || 0));
+                    break;
+                default:
+                    todosToRender.sort((a, b) => a.completed - b.completed || (priorityValue(a.priority) - priorityValue(b.priority)));
+            }
+            todosList.innerHTML = todosToRender.length ? todosToRender.map(todo => `
+                <div class="task-card priority-${todo.priority}" draggable="true" data-id="${todo.id}" ondragstart="dragTodo(event)" ondragover="e => e.preventDefault()" ondrop="dropTodo(event)">
+                    <div class="task-header">
+                        <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo('${todo.id}')" aria-label="Complete task">
+                        <span ${todo.completed ? 'style="text-decoration: line-through;"' : ''}>${todo.title}</span>
+                    </div>
+                    <div class="task-details">
+                        <small>Due: ${todo.dueDate ? formatDate(new Date(todo.dueDate)) : 'N/A'}</small>
+                        ${todo.tags?.map(tag => `<span class="tag">${tag}</span>`).join('') || ''}
+                        ${todo.effort ? `<span>Effort: ${todo.effort}/10</span>` : ''}
+                    </div>
+                    <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()" onclick="showTodoContextMenu(event, '${todo.id}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--muted);">No tasks found.</p>';
+            console.log('Todos rendered:', todosToRender);
+        }
+
         function showCreateTodoModal() {
-            document.getElementById('newTodoTitle').value = '';
-            document.getElementById('newTodoDueDate').value = '';
-            document.getElementById('newTodoTags').value = '';
-            document.getElementById('newTodoEffort').value = '';
-            document.getElementById('newTodoPriority').value = 'medium';
-            document.getElementById('todoRecurrence').value = '';
-            document.getElementById('newTodoAssignees').value = '';
-            document.getElementById('newTodoDependencies').value = '';
+            const modal = document.getElementById('createTodoModal');
+            if (!modal) return console.error('createTodoModal not found');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Create New Task</h2>
+                    <input type="text" id="newTodoTitle" placeholder="Task Title" required>
+                    <div style="display: flex; gap: 16px;">
+                        <select id="newTodoPriority">
+                            <option value="high">High</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                        <input type="datetime-local" id="newTodoDueDate">
+                        <input type="text" id="newTodoTags" placeholder="Tags (e.g., #urgent)">
+                    </div>
+                    <input type="number" id="newTodoEffort" min="1" max="10" placeholder="Effort (1-10)">
+                    <select id="todoRecurrence">
+                        <option value="">One-time</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <input type="text" id="newTodoAssignees" placeholder="Assignees (emails, comma-separated)">
+                    <input type="text" id="newTodoDependencies" placeholder="Dependencies (task IDs, comma-separated)">
+                    <div style="display: flex; gap: 16px; margin-top: 20px;">
+                        <button id="createTodoBtn" onclick="addTodo()">Create</button>
+                        <button class="secondary" onclick="closeModal('createTodoModal')">Cancel</button>
+                    </div>
+                </div>
+            `;
             showModal('createTodoModal');
         }
 
         async function addTodo() {
             if (!currentUser) return alert('Please log in to create a task.');
-            const title = document.getElementById('newTodoTitle').value.trim();
+            const title = document.getElementById('newTodoTitle')?.value.trim();
             if (!title) return alert('Title is required.');
-            const priority = document.getElementById('newTodoPriority').value;
-            const dueDate = document.getElementById('newTodoDueDate').value || null;
-            const tags = document.getElementById('newTodoTags').value.split(',').map(t => t.trim()).filter(t => t);
-            const effort = Math.min(10, Math.max(1, parseInt(document.getElementById('newTodoEffort').value) || 1));
-            const recurrence = document.getElementById('todoRecurrence').value;
-            const assignees = document.getElementById('newTodoAssignees').value.split(',').map(a => a.trim()).filter(a => a && validateEmail(a));
-            const dependencies = document.getElementById('newTodoDependencies').value.split(',').map(d => d.trim()).filter(d => d);
-
+            const priority = document.getElementById('newTodoPriority')?.value || 'medium';
+            const dueDate = document.getElementById('newTodoDueDate')?.value || null;
+            const tags = document.getElementById('newTodoTags')?.value.split(',').map(t => t.trim()).filter(t => t) || [];
+            const effort = Math.min(10, Math.max(1, parseInt(document.getElementById('newTodoEffort')?.value) || 1));
+            const recurrence = document.getElementById('todoRecurrence')?.value || '';
+            const assignees = document.getElementById('newTodoAssignees')?.value.split(',').map(a => a.trim()).filter(a => a && validateEmail(a)) || [];
+            const dependencies = document.getElementById('newTodoDependencies')?.value.split(',').map(d => d.trim()).filter(d => d) || [];
             const createBtn = document.getElementById('createTodoBtn');
+            if (!createBtn) return console.error('createTodoBtn not found');
+
             showLoading();
             createBtn.disabled = true;
             try {
-                await db.collection('users').doc(currentUser.uid).collection('todos').add({
+                const todoData = {
                     title,
                     priority,
                     dueDate,
@@ -1416,10 +1731,13 @@
                     timeEstimate: 0,
                     actualTime: 0,
                     status: 'pending'
-                });
+                };
+                await db.collection('users').doc(currentUser.uid).collection('todos').add(todoData);
                 closeModal('createTodoModal');
                 if (settings.notifications) notify('Task created successfully!');
+                console.log('Task added:', todoData);
             } catch (error) {
+                console.error('Failed to create task:', error);
                 alert('Failed to create task: ' + error.message);
             } finally {
                 createBtn.disabled = false;
@@ -1427,8 +1745,34 @@
             }
         }
 
+        async function addInlineTodo() {
+            const title = document.getElementById('inlineTodo')?.value.trim();
+            if (!title || !currentUser) return;
+            showLoading();
+            try {
+                const todoData = {
+                    title,
+                    priority: 'medium',
+                    completed: false,
+                    created: firebase.firestore.FieldValue.serverTimestamp(),
+                    updated: firebase.firestore.FieldValue.serverTimestamp(),
+                    archived: false,
+                    trashed: false
+                };
+                await db.collection('users').doc(currentUser.uid).collection('todos').add(todoData);
+                document.getElementById('inlineTodo').value = '';
+                console.log('Inline task added:', todoData);
+            } catch (error) {
+                console.error('Failed to add inline task:', error);
+                alert('Failed to add task: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
         async function toggleTodo(id) {
             const todo = todos.find(t => t.id === id);
+            if (!todo) return console.error('Todo not found:', id);
             showLoading();
             try {
                 await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
@@ -1437,7 +1781,9 @@
                     progress: !todo.completed ? 100 : 0,
                     status: !todo.completed ? 'completed' : 'pending'
                 });
+                console.log('Todo toggled:', id);
             } catch (error) {
+                console.error('Failed to toggle task:', error);
                 alert('Failed to toggle task: ' + error.message);
             } finally {
                 hideLoading();
@@ -1451,7 +1797,9 @@
                     trashed: true,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Todo deleted:', id);
             } catch (error) {
+                console.error('Failed to delete task:', error);
                 alert('Failed to delete task: ' + error.message);
             } finally {
                 hideLoading();
@@ -1465,7 +1813,9 @@
                     archived: true,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Todo archived:', id);
             } catch (error) {
+                console.error('Failed to archive task:', error);
                 alert('Failed to archive task: ' + error.message);
             } finally {
                 hideLoading();
@@ -1476,6 +1826,7 @@
             const subtaskTitle = prompt('Enter subtask:');
             if (!subtaskTitle) return;
             const todo = todos.find(t => t.id === id);
+            if (!todo) return console.error('Todo not found:', id);
             showLoading();
             try {
                 const subtasks = [...(todo.subtasks || []), {
@@ -1489,7 +1840,9 @@
                     progress,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Subtask added:', id);
             } catch (error) {
+                console.error('Failed to add subtask:', error);
                 alert('Failed to add subtask: ' + error.message);
             } finally {
                 hideLoading();
@@ -1498,7 +1851,9 @@
 
         async function toggleSubtask(todoId, subtaskIndex) {
             const todo = todos.find(t => t.id === todoId);
-            const subtasks = [...todo.subtasks];
+            if (!todo) return console.error('Todo not found:', todoId);
+            const subtasks = [...(todo.subtasks || [])];
+            if (!subtasks[subtaskIndex]) return console.error('Subtask index invalid:', subtaskIndex);
             subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
             const progress = subtasks.length ? (subtasks.filter(s => s.completed).length / subtasks.length) * 100 : 0;
             showLoading();
@@ -1508,7 +1863,9 @@
                     progress,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Subtask toggled:', todoId, subtaskIndex);
             } catch (error) {
+                console.error('Failed to toggle subtask:', error);
                 alert('Failed to toggle subtask: ' + error.message);
             } finally {
                 hideLoading();
@@ -1519,6 +1876,7 @@
             const email = prompt('Assign to email:');
             if (!email || !validateEmail(email)) return alert('Invalid email address.');
             const todo = todos.find(t => t.id === id);
+            if (!todo) return console.error('Todo not found:', id);
             showLoading();
             try {
                 const assignees = [...(todo.assignees || []), email];
@@ -1526,7 +1884,9 @@
                     assignees,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Task assigned:', id, email);
             } catch (error) {
+                console.error('Failed to assign task:', error);
                 alert('Failed to assign task: ' + error.message);
             } finally {
                 hideLoading();
@@ -1542,7 +1902,9 @@
                     timeEstimate: time,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Time estimate set:', id, time);
             } catch (error) {
+                console.error('Failed to set time estimate:', error);
                 alert('Failed to set time estimate: ' + error.message);
             } finally {
                 hideLoading();
@@ -1553,13 +1915,16 @@
             const time = parseInt(prompt('Log time spent (minutes):', '0')) || 0;
             if (time < 0) return alert('Time cannot be negative.');
             const todo = todos.find(t => t.id === id);
+            if (!todo) return console.error('Todo not found:', id);
             showLoading();
             try {
                 await db.collection('users').doc(currentUser.uid).collection('todos').doc(id).update({
                     actualTime: (todo.actualTime || 0) + time,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Time logged:', id, time);
             } catch (error) {
+                console.error('Failed to log time:', error);
                 alert('Failed to log time: ' + error.message);
             } finally {
                 hideLoading();
@@ -1572,6 +1937,7 @@
             const reminderDate = new Date(date);
             if (isNaN(reminderDate.getTime())) return alert('Invalid date format.');
             const todo = todos.find(t => t.id === id);
+            if (!todo) return console.error('Todo not found:', id);
             showLoading();
             try {
                 const reminders = [...(todo.reminders || []), reminderDate.toISOString()];
@@ -1579,96 +1945,43 @@
                     reminders,
                     updated: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                console.log('Reminder added to todo:', id);
             } catch (error) {
+                console.error('Failed to add reminder:', error);
                 alert('Failed to add reminder: ' + error.message);
             } finally {
                 hideLoading();
             }
         }
 
-        function renderNotes(filter = '') {
-            const notesList = document.getElementById('notesList');
-            if (!notesList) {
-                console.error('notesList element not found in DOM');
-                return;
-            }
-
-            // Minimal filtering: only exclude trashed and archived notes
-            let filteredNotes = notes.filter(n => !n.trashed && !n.archived);
-
-            // Apply search filter if provided
-            if (filter) {
-                const lowerFilter = filter.toLowerCase();
-                filteredNotes = filteredNotes.filter(n =>
-                    (n.title && n.title.toLowerCase().includes(lowerFilter)) ||
-                    (n.content && n.content.toLowerCase().includes(lowerFilter)) ||
-                    (n.tags && n.tags.some(t => t.toLowerCase().includes(lowerFilter)))
-                );
-            }
-
-            // Sort notes (keeping your original logic)
-            switch (settings.noteSort) {
-                case 'created':
-                    filteredNotes.sort((a, b) => (b.created?.toDate() || new Date(0)) - (a.created?.toDate() || new Date(0)));
-                    break;
-                case 'title':
-                    filteredNotes.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-                    break;
-                default:
-                    filteredNotes.sort((a, b) => (b.pinned || 0) - (a.pinned || 0) || ((b.updated?.toDate() || new Date(0)) - (a.updated?.toDate() || new Date(0))));
-            }
-
-            // Render notes with basic structure, ensuring all data is handled safely
-            notesList.innerHTML = filteredNotes.length ? filteredNotes.map(note => {
-                const title = note.title || 'Untitled';
-                const content = note.content || 'No content';
-                const updated = note.updated ? formatDate(note.updated) : 'N/A';
-                const tags = Array.isArray(note.tags) ? note.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : '';
-
-                return `
-            <div class="card" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
-                <h3 style="font-size: 18px; font-weight: 600;">${title}</h3>
-                <p class="note-preview">${content.substring(0, settings.maxPreviewChars)}${content.length > settings.maxPreviewChars ? '...' : ''}</p>
-                <div>${tags}</div>
-                <p style="font-size: 12px; color: var(--muted); margin-top: 12px;">Updated: ${updated}</p>
-            </div>
-        `;
-            }).join('') : '<p style="text-align: center; color: var(--muted);">No notes found.</p>';
-
-            // Debugging: Log the notes being rendered
-            console.log('Notes to render:', filteredNotes);
+        function dragTodo(event) {
+            event.dataTransfer.setData('text/plain', event.target.dataset.id);
         }
 
-        function renderTodos(filteredTodos = null) {
-            const todosList = document.getElementById('todosList');
-            let todosToRender = filteredTodos || todos.filter(t => !t.archived && !t.trashed);
-
-            // Sort todos (unchanged)
-            switch (settings.taskSort) {
-                case 'dueDate':
-                    todosToRender.sort((a, b) => (a.dueDate || 'Z') > (b.dueDate || 'Z') ? 1 : -1);
-                    break;
-                case 'created':
-                    todosToRender.sort((a, b) => (b.created?.toDate() || 0) - (a.created?.toDate() || 0));
-                    break;
-                default:
-                    todosToRender.sort((a, b) => a.completed - b.completed || (priorityValue(a.priority) - priorityValue(b.priority)));
+        async function dropTodo(event) {
+            event.preventDefault();
+            const draggedId = event.dataTransfer.getData('text/plain');
+            const target = event.target.closest('.task-card');
+            if (!target || draggedId === target.dataset.id) return;
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('todos').doc(draggedId).update({
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                renderTodos(); // Simplified; consider adding an order field for robust ordering
+                console.log('Todo reordered:', draggedId);
+            } catch (error) {
+                console.error('Failed to reorder tasks:', error);
+                alert('Failed to reorder tasks: ' + error.message);
+            } finally {
+                hideLoading();
             }
-
-            // Simplified rendering for debugging
-            todosList.innerHTML = todosToRender.length ? todosToRender.map(todo => `
-        <div class="task-card">
-            <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo('${todo.id}')">
-            <span>${todo.title}</span>
-            <p>Due: ${todo.dueDate ? formatDate(new Date(todo.dueDate)) : 'N/A'}</p>
-        </div>
-    `).join('') : '<p>No tasks found.</p>';
-
-            console.log('Rendering todos:', todosToRender); // Debugging: Verify filtered data
         }
 
+        // Calendar
         function renderCalendar() {
             const calendarView = document.getElementById('calendarView');
+            if (!calendarView) return console.error('calendarView not found');
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             let html = '';
@@ -1689,132 +2002,64 @@
                 `;
             }
             calendarView.innerHTML = html;
-            document.getElementById('calendarMonth').textContent = new Date(currentYear, currentMonth).toLocaleString('en-US', {
-                month: 'long',
-                year: 'numeric'
-            });
-        }
-
-        function renderFavorites() {
-            const favoritesList = document.getElementById('favoritesList');
-            const favoriteNotes = notes.filter(n => n.favorited && !n.archived && !n.trashed);
-            favoritesList.innerHTML = favoriteNotes.length ? favoriteNotes.map(note => `
-                <div class="card" style="background: ${note.color};" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
-                    <h3 style="font-size: 18px; font-weight: 600;">${note.title}</h3>
-                    <p class="note-preview">${highlightTagsAndMentions(note.content.substring(0, settings.maxPreviewChars) + (note.content.length > settings.maxPreviewChars ? '...' : ''))}</p>
-                    <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()" onclick="showNoteContextMenu(event, '${note.id}')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
-                    </div>
-                </div>
-            `).join('') : '<p style="text-align: center; color: var(--muted);">No favorites found.</p>';
-        }
-
-        function renderArchive() {
-            const archiveList = document.getElementById('archiveList');
-            const archivedItems = [...notes.filter(n => n.archived && !n.trashed), ...todos.filter(t => t.archived && !t.trashed)];
-            archiveList.innerHTML = archivedItems.length ? archivedItems.map(item => `
-                <div class="card" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
-                    <h3 style="font-size: 18px; font-weight: 600;">${item.title}</h3>
-                    ${item.content ? `<p>${highlightTagsAndMentions(item.content.substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : ''))}</p>` : ''}
-                    <div style="display: flex; gap: 12px; margin-top: 16px;">
-                        <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
-                        <button class="small secondary" onclick="deleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete</button>
-                    </div>
-                </div>
-            `).join('') : '<p style="text-align: center; color: var(--muted);">No archived items found.</p>';
-        }
-
-        function renderTrash() {
-            const trashList = document.getElementById('trashList');
-            const trashedItems = [...notes.filter(n => n.trashed), ...todos.filter(t => t.trashed)];
-            trashList.innerHTML = trashedItems.length ? trashedItems.map(item => `
-                <div class="card" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
-                    <h3 style="font-size: 18px; font-weight: 600;">${item.title}</h3>
-                    ${item.content ? `<p>${highlightTagsAndMentions(item.content.substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : ''))}</p>` : ''}
-                    <div style="display: flex; gap: 12px; margin-top: 16px;">
-                        <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
-                        <button class="small secondary" onclick="permanentlyDeleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete Forever</button>
-                    </div>
-                </div>
-            `).join('') : '<p style="text-align: center; color: var(--muted);">No trashed items found.</p>';
-        }
-
-        function showNoteDetail(id) {
-            const note = notes.find(n => n.id === id);
-            if (!note) return;
-            currentNoteIndex = notes.findIndex(n => n.id === id);
-            const detailContent = document.getElementById('noteDetailContent');
-            detailContent.innerHTML = `
-                <h2 style="font-size: 24px; font-weight: 700;">${note.title}</h2>
-                <textarea id="noteDetailEdit" style="min-height: 250px;" ${note.locked ? 'disabled' : ''}>${note.content}</textarea>
-                <div style="font-size: 12px; color: var(--muted); margin-top: 12px;">
-                    <span>Category: ${note.category}</span> • <span>Words: ${note.wordCount}</span> • 
-                    <span>Created: ${formatDate(note.created)}</span> • <span>Updated: ${formatDate(note.updated)}</span>
-                    ${note.priority > 0 ? `<span class="badge" style="background: ${priorityColor(note.priority)};">P${note.priority}</span>` : ''}
-                </div>
-                <div>${note.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
-                ${note.links?.length ? `<div style="margin-top: 12px;"><strong>Links:</strong> ${note.links.map(l => `<a href="${l}" target="_blank">${l}</a>`).join(', ')}</div>` : ''}
-                ${note.comments?.length ? `<h3 style="margin-top: 20px;">Comments</h3>${note.comments.map(c => `<p style="font-size: 14px;"><strong>${c.user}</strong> (${formatDate(c.timestamp)}): ${c.text}</p>`).join('')}` : ''}
-                ${note.versionHistory?.length > 1 ? `<h3 style="margin-top: 20px;">Version History</h3>${note.versionHistory.map((v, i) => `<p style="font-size: 12px;">${formatDate(v.timestamp)}: ${v.content.substring(0, 50)}...</p>`).join('')}` : ''}
-                ${note.reminders?.length ? `<h3 style="margin-top: 20px;">Reminders</h3>${note.reminders.map(r => `<p style="font-size: 12px;">${formatDate(new Date(r))}</p>`).join('')}` : ''}
-                <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px;">
-                    <button onclick="editNote('${note.id}', document.getElementById('noteDetailEdit').value)" ${note.locked ? 'disabled' : ''}>Save</button>
-                    <button class="secondary" onclick="addComment('${note.id}')">Comment</button>
-                    <button class="secondary" onclick="togglePinNote('${note.id}')">${note.pinned ? 'Unpin' : 'Pin'}</button>
-                    <button class="secondary" onclick="toggleFavoriteNote('${note.id}')">${note.favorited ? 'Unfavorite' : 'Favorite'}</button>
-                    <button class="secondary" onclick="shareNote('${note.id}')">Share</button>
-                    <button class="secondary" onclick="lockNote('${note.id}')">${note.locked ? 'Unlock' : 'Lock'}</button>
-                    <button class="secondary" onclick="setNotePriority('${note.id}')">Set Priority</button>
-                    <button class="secondary" onclick="addReminderToNote('${note.id}')">Add Reminder</button>
-                    <button class="secondary" onclick="archiveNote('${note.id}')">Archive</button>
-                    <button class="secondary" onclick="deleteNote('${note.id}')">Delete</button>
-                </div>
-            `;
-            showModal('noteDetailModal');
-        }
-
-        function navigateNote(direction) {
-            if (direction === 'prev' && currentNoteIndex > 0) {
-                currentNoteIndex--;
-                showNoteDetail(notes[currentNoteIndex].id);
-            } else if (direction === 'next' && currentNoteIndex < notes.length - 1) {
-                currentNoteIndex++;
-                showNoteDetail(notes[currentNoteIndex].id);
+            const calendarMonth = document.getElementById('calendarMonth');
+            if (calendarMonth) {
+                calendarMonth.textContent = new Date(currentYear, currentMonth).toLocaleString('en-US', {
+                    month: 'long',
+                    year: 'numeric'
+                });
             }
+            console.log('Calendar rendered for:', currentMonth, currentYear);
         }
 
         function showDayDetail(day) {
             currentDay = day;
             const date = new Date(currentYear, currentMonth, day);
             const dayTodos = todos.filter(t => t.dueDate && new Date(t.dueDate).toDateString() === date.toDateString());
-            const detailContent = document.getElementById('dayDetailContent');
-            detailContent.innerHTML = `
-                <h2 style="font-size: 24px; font-weight: 700;">${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</h2>
-                ${dayTodos.length ? dayTodos.map(t => `
-                    <div class="task-card priority-${t.priority}">
-                        <div class="task-header">
-                            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodo('${t.id}')">
-                            <div style="flex: 1;">
-                                <span style="font-size: 16px; font-weight: 500; ${t.completed ? 'text-decoration: line-through; color: var(--muted);' : ''}">${t.title}</span>
-                                <div style="margin-top: 8px;">${t.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+            const modal = document.getElementById('dayDetailModal');
+            if (!modal) return console.error('dayDetailModal not found');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-nav">
+                        <button class="small secondary" onclick="navigateDay('prev')">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <button class="small secondary" onclick="navigateDay('next')">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <h2 style="font-size: 24px; font-weight: 700;">${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</h2>
+                    ${dayTodos.length ? dayTodos.map(t => `
+                        <div class="task-card priority-${t.priority}">
+                            <div class="task-header">
+                                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodo('${t.id}')">
+                                <div style="flex: 1;">
+                                    <span style="font-size: 16px; font-weight: 500; ${t.completed ? 'text-decoration: line-through; color: var(--muted);' : ''}">${t.title}</span>
+                                    <div style="margin-top: 8px;">${t.tags?.map(tag => `<span class="tag">${tag}</span>`).join('') || ''}</div>
+                                </div>
+                            </div>
+                            <div class="task-details">
+                                <span>Effort: ${t.effort || 'N/A'}/10</span>
+                                <span>Progress: ${Math.round(t.progress || 0)}%</span>
+                                ${t.assignees?.length ? `<span>Assigned: ${t.assignees.join(', ')}</span>` : ''}
+                                ${t.timeEstimate ? `<span>Est: ${t.timeEstimate}m</span>` : ''}
+                                ${t.actualTime ? `<span>Spent: ${t.actualTime}m</span>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                                <button class="small secondary" onclick="addSubtask('${t.id}')">Subtask</button>
+                                <button class="small secondary" onclick="assignTask('${t.id}')">Assign</button>
+                                <button class="small secondary" onclick="setTimeEstimate('${t.id}')">Estimate</button>
+                                <button class="small secondary" onclick="logTime('${t.id}')">Log Time</button>
                             </div>
                         </div>
-                        <div class="task-details">
-                            <span>Effort: ${t.effort}/10</span>
-                            <span>Progress: ${Math.round(t.progress)}%</span>
-                            ${t.assignees?.length ? `<span>Assigned: ${t.assignees.join(', ')}</span>` : ''}
-                            ${t.timeEstimate ? `<span>Est: ${t.timeEstimate}m</span>` : ''}
-                            ${t.actualTime ? `<span>Spent: ${t.actualTime}m</span>` : ''}
-                        </div>
-                        <div style="display: flex; gap: 12px; margin-top: 16px;">
-                            <button class="small secondary" onclick="addSubtask('${t.id}')">Subtask</button>
-                            <button class="small secondary" onclick="assignTask('${t.id}')">Assign</button>
-                            <button class="small secondary" onclick="setTimeEstimate('${t.id}')">Estimate</button>
-                            <button class="small secondary" onclick="logTime('${t.id}')">Log Time</button>
-                        </div>
-                    </div>
-                `).join('') : '<p style="font-size: 16px; color: var(--muted);">No tasks scheduled.</p>'}
-                <button class="small" onclick="showCreateTodoModalForDay(${day})">+ Add Task</button>
+                    `).join('') : '<p style="font-size: 16px; color: var(--muted);">No tasks scheduled.</p>'}
+                    <button class="small" onclick="showCreateTodoModalForDay(${day})">+ Add Task</button>
+                    <button onclick="closeModal('dayDetailModal')" style="margin-top: 20px;">Close</button>
+                </div>
             `;
             showModal('dayDetailModal');
         }
@@ -1833,51 +2078,197 @@
         function showCreateTodoModalForDay(day) {
             showCreateTodoModal();
             const date = new Date(currentYear, currentMonth, day);
-            document.getElementById('newTodoDueDate').value = date.toISOString().slice(0, 16);
+            const dueDateInput = document.getElementById('newTodoDueDate');
+            if (dueDateInput) dueDateInput.value = date.toISOString().slice(0, 16);
         }
 
-        // Additional Utility Functions
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+
+        // Favorites, Archive, Trash
+        function renderFavorites() {
+            const favoritesList = document.getElementById('favoritesList');
+            if (!favoritesList) return console.error('favoritesList not found');
+            const favoriteNotes = notes.filter(n => n.favorited && !n.archived && !n.trashed);
+            favoritesList.innerHTML = favoriteNotes.length ? favoriteNotes.map(note => `
+                <div class="card" data-id="${note.id}" onclick="toggleSelection(event, 'note', '${note.id}'); if (!event.target.closest('.more-options')) showNoteDetail('${note.id}')">
+                    <h3>${note.title || 'Untitled'}</h3>
+                    <div class="note-preview">${note.content ? note.content.replace(/<[^>]+>/g, '').substring(0, settings.maxPreviewChars) + (note.content.length > settings.maxPreviewChars ? '...' : '') : 'No content'}</div>
+                    <div class="tags">${note.tags?.map(tag => `<span class="tag">${tag}</span>`).join('') || ''}</div>
+                    <small>Updated: ${formatDate(note.updated)}</small>
+                    <div class="more-options" onmouseover="showTooltip(event, 'More options')" onmouseout="hideTooltip()" onclick="showNoteContextMenu(event, '${note.id}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--muted);">No favorites found.</p>';
+            console.log('Favorites rendered:', favoriteNotes);
+        }
+
+        function renderArchive() {
+            const archiveList = document.getElementById('archiveList');
+            if (!archiveList) return console.error('archiveList not found');
+            const archivedItems = [...notes.filter(n => n.archived && !n.trashed), ...todos.filter(t => t.archived && !t.trashed)];
+            archiveList.innerHTML = archivedItems.length ? archivedItems.map(item => `
+                <div class="card" data-id="${item.id}" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
+                    <h3>${item.title}</h3>
+                    ${item.content ? `<div class="note-preview">${item.content.replace(/<[^>]+>/g, '').substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : '')}</div>` : ''}
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">
+                        <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
+                        <button class="small secondary" onclick="deleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete</button>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--muted);">No archived items found.</p>';
+            console.log('Archive rendered:', archivedItems);
+        }
+
+        function renderTrash() {
+            const trashList = document.getElementById('trashList');
+            if (!trashList) return console.error('trashList not found');
+            const trashedItems = [...notes.filter(n => n.trashed), ...todos.filter(t => t.trashed)];
+            trashList.innerHTML = trashedItems.length ? trashedItems.map(item => `
+                <div class="card" data-id="${item.id}" onclick="toggleSelection(event, '${item.content ? 'note' : 'todo'}', '${item.id}')">
+                    <h3>${item.title}</h3>
+                    ${item.content ? `<div class="note-preview">${item.content.replace(/<[^>]+>/g, '').substring(0, settings.maxPreviewChars) + (item.content.length > settings.maxPreviewChars ? '...' : '')}</div>` : ''}
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">
+                        <button class="small" onclick="restoreItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Restore</button>
+                        <button class="small secondary" onclick="permanentlyDeleteItem('${item.id}', '${item.content ? 'notes' : 'todos'}')">Delete Forever</button>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--muted);">No trashed items found.</p>';
+            console.log('Trash rendered:', trashedItems);
+        }
+
+        async function restoreItem(id, collection) {
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).update({
+                    archived: false,
+                    trashed: false,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('Item restored:', id, collection);
+            } catch (error) {
+                console.error('Failed to restore item:', error);
+                alert('Failed to restore item: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteItem(id, collection) {
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).update({
+                    trashed: true,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('Item deleted:', id, collection);
+            } catch (error) {
+                console.error('Failed to delete item:', error);
+                alert('Failed to delete item: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function permanentlyDeleteItem(id, collection) {
+            if (!confirm('Are you sure you want to delete this item permanently?')) return;
+            showLoading();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).delete();
+                console.log('Item permanently deleted:', id, collection);
+            } catch (error) {
+                console.error('Failed to permanently delete item:', error);
+                alert('Failed to permanently delete item: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Additional Features
         function showStats() {
             const modal = document.getElementById('statsModal');
-            const statsContent = document.getElementById('statsContent');
+            if (!modal) return console.error('statsModal not found');
             const completedTodos = todos.filter(t => t.completed).length;
             const totalTodos = todos.length;
             const completionRate = totalTodos ? Math.round((completedTodos / totalTodos) * 100) : 0;
             const averageEffort = totalTodos ? (todos.reduce((sum, t) => sum + (t.effort || 1), 0) / totalTodos).toFixed(1) : 0;
             const tagUsage = todos.reduce((acc, t) => {
-                t.tags.forEach(tag => acc[tag] = (acc[tag] || 0) + 1);
+                t.tags?.forEach(tag => acc[tag] = (acc[tag] || 0) + 1);
                 return acc;
             }, {});
             const timeSpent = todos.reduce((sum, t) => sum + (t.actualTime || 0), 0);
             const overdueTasks = todos.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && !t.completed).length;
 
-            statsContent.innerHTML = `
-                <p><strong>Total Notes:</strong> ${notes.length} <span class="badge">${notes.filter(n => n.pinned).length} Pinned</span> <span class="badge">${notes.filter(n => n.favorited).length} Favorited</span></p>
-                <p><strong>Total Tasks:</strong> ${totalTodos} <span class="badge">${completedTodos} Completed (${completionRate}%)</span></p>
-                <p><strong>Overdue Tasks:</strong> ${overdueTasks}</p>
-                <p><strong>Average Task Effort:</strong> ${averageEffort}/10</p>
-                <p><strong>Total Time Spent:</strong> ${timeSpent} minutes</p>
-                <p><strong>Top Tags:</strong> ${Object.entries(tagUsage).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag, count]) => `${tag} (${count})`).join(', ') || 'None'}</p>
-                <p><strong>Locked Notes:</strong> ${notes.filter(n => n.locked).length}</p>
-                <p><strong>Collaborative Items:</strong> ${notes.filter(n => n.collaborators?.length).length + todos.filter(t => t.assignees?.length).length}</p>
-                <div class="progress-bar" style="margin-top: 16px;"><div class="progress-bar-fill" style="width: ${completionRate}%"></div></div>
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Productivity Insights</h2>
+                    <p><strong>Total Notes:</strong> ${notes.length} <span class="badge">${notes.filter(n => n.pinned).length} Pinned</span> <span class="badge">${notes.filter(n => n.favorited).length} Favorited</span></p>
+                    <p><strong>Total Tasks:</strong> ${totalTodos} <span class="badge">${completedTodos} Completed (${completionRate}%)</span></p>
+                    <p><strong>Overdue Tasks:</strong> ${overdueTasks}</p>
+                    <p><strong>Average Task Effort:</strong> ${averageEffort}/10</p>
+                    <p><strong>Total Time Spent:</strong> ${timeSpent} minutes</p>
+                    <p><strong>Top Tags:</strong> ${Object.entries(tagUsage).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag, count]) => `${tag} (${count})`).join(', ') || 'None'}</p>
+                    <p><strong>Locked Notes:</strong> ${notes.filter(n => n.locked).length}</p>
+                    <p><strong>Collaborative Items:</strong> ${notes.filter(n => n.collaborators?.length).length + todos.filter(t => t.assignees?.length).length}</p>
+                    <div class="progress-bar" style="margin-top: 16px;"><div class="progress-bar-fill" style="width: ${completionRate}%"></div></div>
+                    <button onclick="closeModal('statsModal')">Close</button>
+                </div>
             `;
             showModal('statsModal');
         }
 
-        function showSettings() {
-            showModal('settingsModal');
-        }
-
         function toggleFilterPanel() {
+            const modal = document.getElementById('filterModal');
+            if (!modal) return console.error('filterModal not found');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Filters</h2>
+                    <select id="filterCategory">
+                        <option value="">All Categories</option>
+                        <option value="personal">Personal</option>
+                        <option value="work">Work</option>
+                        <option value="ideas">Ideas</option>
+                    </select>
+                    <input type="text" id="filterTags" placeholder="Filter by tags">
+                    <select id="filterPriority">
+                        <option value="">All Priorities</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                    <select id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="completed">Completed</option>
+                        <option value="incomplete">Incomplete</option>
+                    </select>
+                    <button onclick="applyFilters()">Apply</button>
+                    <button class="secondary" onclick="closeModal('filterModal')">Cancel</button>
+                </div>
+            `;
             showModal('filterModal');
         }
 
         function applyFilters() {
-            const category = document.getElementById('filterCategory').value;
-            const tags = document.getElementById('filterTags').value.split(',').map(t => t.trim()).filter(t => t);
-            const priority = document.getElementById('filterPriority').value;
-            const status = document.getElementById('filterStatus').value;
+            const category = document.getElementById('filterCategory')?.value || '';
+            const tags = document.getElementById('filterTags')?.value.split(',').map(t => t.trim()).filter(t => t) || [];
+            const priority = document.getElementById('filterPriority')?.value || '';
+            const status = document.getElementById('filterStatus')?.value || '';
             const filterQuery = tags.join(' ').toLowerCase();
 
             if (currentPage === 'notes') {
@@ -1885,17 +2276,18 @@
             } else if (currentPage === 'todos') {
                 const filteredTodos = todos.filter(t => !t.archived && !t.trashed &&
                     (!category || t.category === category) &&
-                    (!tags.length || t.tags.some(tag => filterQuery.includes(tag.toLowerCase()))) &&
+                    (!tags.length || t.tags?.some(tag => filterQuery.includes(tag.toLowerCase()))) &&
                     (!priority || t.priority === priority) &&
                     (!status || (status === 'completed' ? t.completed : !t.completed)));
                 renderTodos(filteredTodos);
             }
             closeModal('filterModal');
-        }
-
-        function changeTheme() {
-            const theme = document.getElementById('themeSelect').value;
-            document.body.classList.toggle('dark-theme', theme === 'dark');
+            console.log('Filters applied:', {
+                category,
+                tags,
+                priority,
+                status
+            });
         }
 
         async function exportData() {
@@ -1917,23 +2309,82 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                console.log('Data exported:', data);
             } catch (error) {
+                console.error('Failed to export data:', error);
                 alert('Failed to export data: ' + error.message);
             } finally {
                 hideLoading();
             }
         }
 
+        function showQuickAdd() {
+            const modal = document.getElementById('quickAddModal');
+            if (!modal) return console.error('quickAddModal not found');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Quick Add</h2>
+                    <input type="text" id="quickAddTitle" placeholder="Title" required>
+                    <select id="quickAddType">
+                        <option value="note">Note</option>
+                        <option value="todo">Task</option>
+                    </select>
+                    <button onclick="quickAddItem()">Add</button>
+                    <button class="secondary" onclick="closeModal('quickAddModal')">Cancel</button>
+                </div>
+            `;
+            showModal('quickAddModal');
+        }
+
+        async function quickAddItem() {
+            const title = document.getElementById('quickAddTitle')?.value.trim();
+            const type = document.getElementById('quickAddType')?.value;
+            if (!title || !currentUser) return alert('Title is required.');
+            showLoading();
+            try {
+                if (type === 'note') {
+                    await db.collection('users').doc(currentUser.uid).collection('notes').add({
+                        title,
+                        content: '',
+                        created: firebase.firestore.FieldValue.serverTimestamp(),
+                        updated: firebase.firestore.FieldValue.serverTimestamp(),
+                        archived: false,
+                        trashed: false
+                    });
+                } else {
+                    await db.collection('users').doc(currentUser.uid).collection('todos').add({
+                        title,
+                        priority: 'medium',
+                        completed: false,
+                        created: firebase.firestore.FieldValue.serverTimestamp(),
+                        updated: firebase.firestore.FieldValue.serverTimestamp(),
+                        archived: false,
+                        trashed: false
+                    });
+                }
+                closeModal('quickAddModal');
+                if (settings.notifications) notify(`${type.charAt(0).toUpperCase() + type.slice(1)} added successfully!`);
+                console.log('Quick add item:', type, title);
+            } catch (error) {
+                console.error('Failed to quick add item:', error);
+                alert(`Failed to add ${type}: ` + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Context Menus
         function showNoteContextMenu(event, id) {
             event.stopPropagation();
             const menu = document.getElementById('contextMenu');
+            if (!menu) return console.error('contextMenu not found');
             menu.style.left = `${event.pageX}px`;
             menu.style.top = `${event.pageY}px`;
             menu.style.display = 'block';
             menu.innerHTML = `
                 <div onclick="togglePinNote('${id}')">Pin/Unpin</div>
                 <div onclick="toggleFavoriteNote('${id}')">Favorite/Unfavorite</div>
-                <div onclick="editNote('${id}', prompt('Edit note:', notes.find(n => n.id === '${id}').content))">Edit</div>
+                <div onclick="editNote('${id}', prompt('Edit note:', notes.find(n => n.id === '${id}')?.content))">Edit</div>
                 <div onclick="shareNote('${id}')">Share</div>
                 <div onclick="lockNote('${id}')">Lock/Unlock</div>
                 <div onclick="setNotePriority('${id}')">Set Priority</div>
@@ -1950,6 +2401,7 @@
         function showTodoContextMenu(event, id) {
             event.stopPropagation();
             const menu = document.getElementById('contextMenu');
+            if (!menu) return console.error('contextMenu not found');
             menu.style.left = `${event.pageX}px`;
             menu.style.top = `${event.pageY}px`;
             menu.style.display = 'block';
@@ -1968,109 +2420,39 @@
             });
         }
 
-        async function restoreItem(id, collection) {
-            showLoading();
-            try {
-                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).update({
-                    archived: false,
-                    trashed: false,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (error) {
-                alert('Failed to restore item: ' + error.message);
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function deleteItem(id, collection) {
-            showLoading();
-            try {
-                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).update({
-                    trashed: true,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (error) {
-                alert('Failed to delete item: ' + error.message);
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function permanentlyDeleteItem(id, collection) {
-            if (!confirm('Are you sure you want to delete this item permanently?')) return;
-            showLoading();
-            try {
-                await db.collection('users').doc(currentUser.uid).collection(collection).doc(id).delete();
-            } catch (error) {
-                alert('Failed to permanently delete item: ' + error.message);
-            } finally {
-                hideLoading();
-            }
-        }
-
-        function previousMonth() {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
-            renderCalendar();
-        }
-
-        function nextMonth() {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            renderCalendar();
-        }
-
-        function extractMentions(content) {
-            return (content.match(/@\w+/g) || []).map(m => m.slice(1));
-        }
-
-        function highlightTagsAndMentions(content) {
-            return content
-                .replace(/#\w+/g, '<span style="color: var(--primary);">$&</span>')
-                .replace(/@\w+/g, '<span style="color: var(--accent);">$&</span>')
-                .replace(/\/(\w+)/g, '<span style="color: #805ad5;">$&</span>');
-        }
-
-        function toggleSelection(event, type, id) {
-            if (event.ctrlKey || event.metaKey) {
-                event.stopPropagation();
-                if (selectedItems.has(id)) selectedItems.delete(id);
-                else selectedItems.add(id);
-                highlightSelectedItems();
-            }
-        }
-
-        function highlightSelectedItems() {
-            document.querySelectorAll('.card, .task-card').forEach(card => {
-                const idMatch = card.getAttribute('onclick')?.match(/'(.*?)'/g);
-                const id = idMatch ? idMatch[1] : null;
-                if (id && selectedItems.has(id)) card.style.border = '2px solid var(--primary)';
-                else card.style.border = 'none';
-            });
-        }
-
+        // Bulk Actions
         function showBulkActions(type) {
             const items = type === 'notes' ? notes : todos;
-            const bulkItemsList = document.getElementById('bulkItemsList');
-            bulkItemsList.innerHTML = items.map(item => `
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <input type="checkbox" ${selectedItems.has(item.id) ? 'checked' : ''} onchange="toggleSelection(null, '${type}', '${item.id}'); highlightSelectedItems()">
-                    <span>${item.title}</span>
+            const modal = document.getElementById('bulkActionsModal');
+            if (!modal) return console.error('bulkActionsModal not found');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Bulk Actions</h2>
+                    <select id="bulkActionType">
+                        <option value="archive">Archive Selected</option>
+                        <option value="trash">Trash Selected</option>
+                        <option value="favorite">Favorite Selected</option>
+                        <option value="pin">Pin Selected</option>
+                    </select>
+                    <div id="bulkItemsList" style="max-height: 200px; overflow-y: auto; margin-top: 16px;">
+                        ${items.map(item => `
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <input type="checkbox" ${selectedItems.has(item.id) ? 'checked' : ''} onchange="toggleSelection(null, '${type}', '${item.id}'); highlightSelectedItems()">
+                                <span>${item.title}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="executeBulkAction()">Execute</button>
+                    <button class="secondary" onclick="closeModal('bulkActionsModal')">Cancel</button>
                 </div>
-            `).join('');
+            `;
             showModal('bulkActionsModal');
         }
 
         async function executeBulkAction() {
-            const action = document.getElementById('bulkActionType').value;
+            const action = document.getElementById('bulkActionType')?.value;
             const collection = currentPage === 'notes' ? 'notes' : 'todos';
+            if (!action) return console.error('Bulk action type not selected');
             showLoading();
             try {
                 const batch = db.batch();
@@ -2105,11 +2487,32 @@
                 });
                 await batch.commit();
                 closeModal('bulkActionsModal');
+                console.log('Bulk action executed:', action, selectedItems);
             } catch (error) {
+                console.error('Failed to execute bulk action:', error);
                 alert('Failed to execute bulk action: ' + error.message);
             } finally {
                 hideLoading();
             }
+        }
+
+        // Utility Functions
+        function toggleSelection(event, type, id) {
+            if (event && (event.ctrlKey || event.metaKey)) {
+                event.stopPropagation();
+                if (selectedItems.has(id)) selectedItems.delete(id);
+                else selectedItems.add(id);
+                highlightSelectedItems();
+                console.log('Selection toggled:', type, id, selectedItems);
+            }
+        }
+
+        function highlightSelectedItems() {
+            document.querySelectorAll('.card, .task-card').forEach(card => {
+                const idMatch = card.getAttribute('data-id');
+                if (idMatch && selectedItems.has(idMatch)) card.style.border = '2px solid var(--primary)';
+                else card.style.border = 'none';
+            });
         }
 
         function notify(message) {
@@ -2124,10 +2527,12 @@
                     });
                 });
             }
+            console.log('Notification:', message);
         }
 
         function showTooltip(event, text) {
             const tooltip = document.getElementById('tooltip');
+            if (!tooltip) return console.error('tooltip not found');
             tooltip.textContent = text;
             tooltip.style.left = `${event.pageX + 10}px`;
             tooltip.style.top = `${event.pageY + 10}px`;
@@ -2135,7 +2540,8 @@
         }
 
         function hideTooltip() {
-            document.getElementById('tooltip').style.display = 'none';
+            const tooltip = document.getElementById('tooltip');
+            if (tooltip) tooltip.style.display = 'none';
         }
 
         function priorityValue(priority) {
@@ -2156,20 +2562,38 @@
             } [priority] || '#e2e8f0';
         }
 
+        function extractMentions(content) {
+            return (content.match(/@\w+/g) || []).map(m => m.slice(1));
+        }
+
         function searchItems() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput')?.value.toLowerCase() || '';
             if (currentPage === 'notes') {
                 renderNotes(query);
             } else if (currentPage === 'todos') {
                 const filteredTodos = todos.filter(t => !t.archived && !t.trashed &&
-                    (t.title.toLowerCase().includes(query) || t.tags.some(tag => tag.toLowerCase().includes(query))));
+                    (t.title.toLowerCase().includes(query) || t.tags?.some(tag => tag.toLowerCase().includes(query))));
                 renderTodos(filteredTodos);
             }
+            console.log('Search executed:', query);
+        }
+
+        function searchSidebar() {
+            const query = document.getElementById('sidebarSearch')?.value.toLowerCase() || '';
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                const text = item.querySelector('span')?.textContent.toLowerCase() || '';
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+            console.log('Sidebar search:', query);
         }
 
         // Initial Setup
-        showPage('notes');
-        if ('Notification' in window) Notification.requestPermission();
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded');
+            renderAuthModal(); // Show login modal initially
+            showPage('notes');
+            if ('Notification' in window) Notification.requestPermission();
+        });
     </script>
 </body>
 
